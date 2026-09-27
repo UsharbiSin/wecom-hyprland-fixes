@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <wchar.h>
 #include "policy.h"
+#include "candidate-policy.h"
 
 typedef struct {
     DWORD dwSize;
@@ -40,22 +41,29 @@ struct ime_driver_call_params {
 };
 typedef LRESULT (WINAPI *NtMessageCall)(HWND, UINT, WPARAM, LPARAM,
                                       void *, DWORD, BOOL);
+typedef ULONG_PTR (WINAPI *NtCallTwoParam)(ULONG_PTR, ULONG_PTR, ULONG);
 #define WINE_IME_TO_ASCII_EX 0
 #define NTUSER_IME_DRIVER_CALL 0x0305
+#define NTUSER_SET_IME_COMPOSITION_RECT 6
 #define IMN_WINE_SET_COMP_STRING 0x0010
 #define STATUS_BUFFER_TOO_SMALL_VALUE ((LONG)0xc0000023)
 
-#define IME_MAPPING L"Local\\WeComDocsImeConfig-v1"
+#define IME_MAPPING L"Local\\WeComDocsImeConfig-v2"
+/* Keep the singleton mutex stable across protocol upgrades. The old guard
+ * must stop before a v2 guard can own this Wine prefix.
+ */
 #define IME_MUTEX L"Local\\WeComDocsImeGuard-v1"
-#define IME_STOP L"Local\\WeComDocsImeStop-v1"
-#define IME_DONE L"Local\\WeComDocsImeDone-v1"
-#define IME_CLEAN L"Local\\WeComDocsImeClean-v1"
-#define IME_PROPERTY L"WeComDocsImeReceiver-v1"
-#define IME_CLASS L"WeComDocsImeIpc-v1"
-#define IME_PRIME L"WeComDocsImePrime-v1"
-#define IME_ACK L"WeComDocsImeAck-v1"
-#define IME_READY L"WeComDocsImeReady-v1"
-#define IME_SHUTDOWN L"WeComDocsImeShutdown-v1"
+#define IME_STOP L"Local\\WeComDocsImeStop-v2"
+#define IME_DONE L"Local\\WeComDocsImeDone-v2"
+#define IME_CLEAN L"Local\\WeComDocsImeClean-v2"
+#define IME_PROPERTY L"WeComDocsImeReceiver-v2"
+#define IME_SOURCE_PROPERTY L"WeComDocsImeSource-v2"
+#define IME_CLASS L"WeComDocsImeIpc-v2"
+#define IME_PRIME L"WeComDocsImePrime-v2"
+#define IME_ACK L"WeComDocsImeAck-v2"
+#define IME_READY L"WeComDocsImeReady-v2"
+#define IME_SHUTDOWN L"WeComDocsImeShutdown-v2"
+#define IME_POSITION L"WeComDocsImePosition-v2"
 #define IME_CONFIG_MAGIC 0x57494346u
 #define IME_PATH_MAX 1024
 

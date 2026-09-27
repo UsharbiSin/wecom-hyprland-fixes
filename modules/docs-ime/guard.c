@@ -204,7 +204,12 @@ static int request_stop(void)
     if (!stop) {
         DWORD error = GetLastError();
         CloseHandle(mutex);
-        if (error == ERROR_FILE_NOT_FOUND) return 0;
+        if (error == ERROR_FILE_NOT_FOUND) {
+            fputs("docs-ime: an older guard owns this prefix; stop it with "
+                  "its original helper --stop, or fully restart the "
+                  "WeCom session before upgrading\n", stderr);
+            return 1;
+        }
         fputs("docs-ime: cannot open stop event\n", stderr);
         return 1;
     }
@@ -280,7 +285,7 @@ int wmain(int argc, WCHAR **argv)
     if (lock != WAIT_OBJECT_0 && lock != WAIT_ABANDONED) {
         fputs("docs-ime: a guard already owns this Wine prefix\n", stderr);
         CloseHandle(mutex);
-        return 0;
+        return 1;
     }
     int result = 1;
     HANDLE map = NULL;
