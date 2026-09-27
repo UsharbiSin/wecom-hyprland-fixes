@@ -1,0 +1,33 @@
+{
+  "id": "docs",
+  "title": "共享文档白屏",
+  "description": "私有 V8 兼容补丁与文档 DPI 对齐",
+  "dependencies": [
+    "python3",
+    "bwrap",
+    "wine"
+  ],
+  "artifacts": [
+    "libcef.dll"
+  ],
+  "bindings": [
+    {
+      "source": "libcef.dll",
+      "target": "{app_dir}/{app_version}/compatible_web/libcef.dll",
+      "sha256":
+        "007385e85fce0e70788dbc362792d0738f6a7f5a045858924ab4789fa58a369f"
+    }
+  ],
+  "registry": [
+    {
+      "key":
+        [
+          "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion",
+          "\\Image File Execution Options\\WeMail.exe"
+        ],
+      "name": "dpiAwareness",
+      "type": "REG_DWORD",
+      "value": "1"
+    }
+  ]
+}
