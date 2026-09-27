@@ -1,0 +1,42 @@
+{
+  "id": "desktop",
+  "title": "Thunar 与桌面打开入口",
+  "description": "转接 Wine 文件夹请求，并为链接使用 GIO 桌面处理器。",
+  "dependencies": [
+    "i686-w64-mingw32-gcc", "x86_64-w64-mingw32-gcc",
+    "python3", "wine", "bwrap", "gio", "thunar"
+  ],
+  "artifacts": [
+    "explorer-proxy-32.exe", "explorer-proxy-64.exe", "thunar-bridge.py",
+    "bin/xdg-open"
+  ],
+  "bindings": [
+    {
+      "source": "explorer-proxy-64.exe",
+      "target": "{prefix}/drive_c/windows/explorer.exe"
+    },
+    {
+      "source": "explorer-proxy-64.exe",
+      "target": "{prefix}/drive_c/windows/system32/explorer.exe"
+    },
+    {
+      "source": "explorer-proxy-32.exe",
+      "target": "{prefix}/drive_c/windows/syswow64/explorer.exe"
+    }
+  ],
+  "helpers": [{"runner": "python3", "source": "thunar-bridge.py"}],
+  "path": "bin",
+  "environment": {
+    "WECOM_THUNAR_QUEUE": "{state_dir}/thunar-queue",
+    "WECOM_EXPLORER_ORIGINAL32": "/usr/lib/wine/i386-windows/explorer.exe",
+    "WECOM_EXPLORER_ORIGINAL64": "/usr/lib/wine/x86_64-windows/explorer.exe"
+  },
+  "registry": [
+    {
+      "key": "HKCU\\Software\\Wine\\DllOverrides",
+      "name": "explorer.exe",
+      "type": "REG_SZ",
+      "value": "native"
+    }
+  ]
+}
