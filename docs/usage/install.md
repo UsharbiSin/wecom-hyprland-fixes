@@ -21,6 +21,7 @@ export WECOM_PREFIX="$HOME/.local/share/wecom/prefix"
 
 验证环境为企业微信 `5.0.11.6018`、内置会议 `3.26.511.637`。
 Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
+共享文档中文输入模块验证于 `11.18-1`、Fcitx5 `5.1.23` 和 Rime。
 精确限制以各模块哈希为准；同名版本包重新编译也可能不同。
 
 ## 2. 准备依赖
@@ -31,6 +32,7 @@ Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
 | display | i686 MinGW GCC；Hyprland Lua 配置接口 |
 | desktop | i686/x86_64 MinGW GCC、Python、Thunar、GIO |
 | docs | Python、对应企业微信原版 CEF DLL |
+| docs-ime | Python 3.11 以上、i686 MinGW GCC、Wine；运行需 fcitx5 |
 | meeting | i686 MinGW GCC；按需准备微软官方 x86 VC++ 安装包 |
 | camera | Wine 11.17 匹配库/头文件、官方源码、GCC、V4L2 |
 | screencast | G++、pkg-config、libportal、PipeWire、X11 开发文件 |
@@ -54,6 +56,8 @@ Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
 
 没有默认的“安装全部”命令：摄像头与剪贴板的已核验 Wine 版本不同，
 办公默认程序还涉及个人偏好。一套环境应选择当前确实需要的模块。
+共享文档输入需要单独构建 `docs-ime`；该模块每次构建和启动前，
+还会校验系统 Wine、前缀 DLL 和相关程序，拒绝混用不同组件。
 
 ## 4. 查看计划并安装
 
@@ -91,6 +95,21 @@ Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
 
 不要同时使用旧入口和新入口打开同一前缀。
 已有外部 Wine 会话可能复用视图之外的 wineserver，故工具会拒绝混用。
+
+### 已有会话中的文档中文输入
+
+`docs-ime` 可在构建后附加到已有企业微信会话；这不启动第二份企业微信：
+
+```sh
+./wecom-fix build docs-ime --prefix "$WECOM_PREFIX"
+python3 build/docs-ime/start.py --prefix "$WECOM_PREFIX"
+```
+
+另开终端，用相同命令追加 `--stop` 可热停止转交。
+此方式只附加辅助程序，管理器的正式安装和移除仍要求先退出 Wine 会话。
+替换桥接 DLL 后必须退出整个企业微信会话再启动，
+仅停止并再次启动辅助程序不能保证卸载旧 DLL。
+详细验收及限制见[文档中文输入](../features/docs-ime.md)。
 
 ## 6. 可选的桌面配置
 

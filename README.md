@@ -1,7 +1,7 @@
 # 企业微信 Wine / Hyprland 修复工具集
 
 用于解决 Windows 企业微信在 Linux Wine / Hyprland 环境中的
-窗口显示、文档白屏、会议、摄像头、屏幕共享和图片粘贴问题。
+窗口显示、文档白屏与中文输入、会议、摄像头、屏幕共享和图片粘贴问题。
 各功能独立构建和安装，通过统一入口启动、检查和回滚。
 
 ## 目录
@@ -33,6 +33,7 @@
 | `display` | 装饰黑框、菜单输入、96 DPI 会议控件 | [窗口与 DPI][display] |
 | `desktop` | 用 Thunar 打开文件夹、办公文件和链接转接 | [桌面集成][desktop] |
 | `docs` | 共享文档白屏、文档宿主 DPI 不一致 | [文档修复][documents] |
+| `docs-ime` | 文档候选能选字，但中文未进入输入框 | [文档中文输入][docs-ime] |
 | `meeting` | 内置会议入口缺失及并发运行库加载 | [会议依赖][meeting] |
 | `camera` | Wine 11.17 摄像头格式枚举崩溃 | [摄像头修复][camera] |
 | `screencast` | 内置会议读取不到完整 Wayland 桌面 | [屏幕共享][screencast] |
@@ -95,6 +96,9 @@ flowchart LR
 均有对应环境的实际使用记录；各模块文档列出版本、检查方法及未验证范围。
 安装后请按功能说明完成界面检查；自动检查不能替代实际使用验证。
 
+`docs-ime` 已在 Wine `11.18-1`、Fcitx5/Rime 环境的真实评论草稿中
+验证中文输入与启停；候选定位、正文保存和其他文档控件仍有限制。
+
 Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 屏幕共享不能自动排除会议自己的窗口，多显示器和不同缩放需单独测试。
 使用旧全局图片转换服务的用户，请先阅读[剪贴板迁移说明][legacy]。
@@ -102,6 +106,7 @@ Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 [display]: docs/features/display.md
 [desktop]: docs/features/desktop.md
 [documents]: docs/features/docs.md
+[docs-ime]: docs/features/docs-ime.md
 [meeting]: docs/features/meeting.md
 [camera]: docs/features/camera.md
 [screencast]: docs/features/screencast.md
