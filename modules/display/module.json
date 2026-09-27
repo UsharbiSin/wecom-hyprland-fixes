@@ -1,0 +1,22 @@
+{
+  "id": "display",
+  "title": "窗口、菜单与 96 DPI",
+  "description": "区分装饰层、菜单与会议窗口，保留输入与窗口透明通道。",
+  "dependencies": ["i686-w64-mingw32-gcc", "wine"],
+  "artifacts": ["shadow-guard.exe", "hyprland.lua"],
+  "helpers": [{"runner": "wine", "source": "shadow-guard.exe"}],
+  "registry": [
+    {
+      "key": "HKCU\\Control Panel\\Desktop",
+      "name": "LogPixels",
+      "type": "REG_DWORD",
+      "value": "96"
+    },
+    {
+      "key": "HKCC\\Software\\Fonts",
+      "name": "LogPixels",
+      "type": "REG_DWORD",
+      "value": "96"
+    }
+  ]
+}
