@@ -1,0 +1,25 @@
+{
+  "id": "clipboard",
+  "title": "双向图片剪贴板",
+  "description": "恢复图片输入回调，并只给企微自有图片追加 PNG。",
+  "dependencies": [
+    "python3", "bwrap", "wine", "as", "ld", "objcopy", "gcc",
+    "g++", "x86_64-w64-mingw32-g++", "x86_64-w64-mingw32-objdump"
+  ],
+  "artifacts": ["riched20.dll", "wecom-png-outbound.exe"],
+  "bindings": [
+    {
+      "source": "riched20.dll",
+      "target": "/usr/lib/wine/i386-windows/riched20.dll",
+      "sha256":
+        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3"
+    },
+    {
+      "source": "riched20.dll",
+      "target": "{prefix}/drive_c/windows/syswow64/riched20.dll",
+      "sha256":
+        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3"
+    }
+  ],
+  "helpers": [{"runner": "wine", "source": "wecom-png-outbound.exe"}]
+}
