@@ -1,0 +1,23 @@
+--- a/dlls/riched20/editor.c
++++ b/dlls/riched20/editor.c
+@@ -2352,6 +2352,20 @@ static BOOL paste_special
+     hr = OleGetClipboard( &data );
+     if (hr != S_OK) return FALSE;
+ 
++    if (editor->lpOleCallback)
++    {
++        CLIPFORMAT accepted = cf;
++
++        hr = IRichEditOleCallback_QueryAcceptData( editor->lpOleCallback,
++                data, &accepted, RECO_PASTE, !check_only, NULL );
++        cf = accepted;
++        if (hr != S_OK)
++        {
++            IDataObject_Release( data );
++            return SUCCEEDED( hr );
++        }
++    }
++
+     if (cf == CF_TEXT) cf = CF_UNICODETEXT;
+ 
+     hr = S_FALSE;
