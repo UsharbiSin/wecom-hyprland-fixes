@@ -1,0 +1,23 @@
+{
+  "id": "meeting",
+  "title": "内置会议加载依赖",
+  "description": "提供缺少的旧版查询入口并按进程选择微软并发运行库。",
+  "dependencies": ["i686-w64-mingw32-gcc", "wine"],
+  "artifacts": ["SLWGA.dll"],
+  "copies": [
+    {
+      "source": "SLWGA.dll",
+      "target": "{app_dir}/{app_version}/WeMeet/3.26.511.637/SLWGA.dll",
+      "replace_sha256":
+        "6b9b10df7713011fe15ba4544171e16b4d5cd3103ea52d1849078eb40ab433b2"
+    }
+  ],
+  "registry": [
+    {
+      "key": "HKCU\\Software\\Wine\\AppDefaults\\wwmapp.exe\\DllOverrides",
+      "name": "concrt140",
+      "type": "REG_SZ",
+      "value": "native,builtin"
+    }
+  ]
+}

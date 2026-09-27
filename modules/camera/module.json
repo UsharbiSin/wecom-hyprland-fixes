@@ -1,0 +1,29 @@
+{
+  "id": "camera",
+  "title": "摄像头格式枚举崩溃",
+  "description": "仅适用于已核验的 Wine 11.17 Unix 后端",
+  "dependencies": [
+    "python3",
+    "gcc",
+    "sha256sum",
+    "bwrap"
+  ],
+  "artifacts": [
+    "qcap.so"
+  ],
+  "bindings": [
+    {
+      "source": "qcap.so",
+      "target": "/usr/lib/wine/x86_64-unix/qcap.so",
+      "sha256":
+        "9bc8291670e430ccefcb2688dd4477950555b1c4ae1dcc2cd3a8ba202fce1d41"
+    }
+  ],
+  "guards": [
+    {
+      "target": "/usr/lib/wine/x86_64-unix/ntdll.so",
+      "sha256":
+        "8a13d7042cef287802ea3bc60af40a7ee9def3130bb0d2be32c574693c9beb62"
+    }
+  ]
+}
