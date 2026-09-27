@@ -1,0 +1,9 @@
+/build/
+/.local/
+__pycache__/
+*.pyc
+*.exe
+*.dll
+*.so
+*.log
+.env

@@ -1,0 +1,33 @@
+name: 问题反馈
+description: 报告可复现的修复脚本或兼容性问题
+title: "fix: "
+labels: [bug]
+body:
+  - type: input
+    id: module
+    attributes:
+      label: 涉及模块
+      placeholder: 例如 clipboard、docs、display
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 系统与版本
+      description: 填写发行版、Wine、企业微信、Hyprland 版本及模块状态。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤、预期结果与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 日志与截图
+  - type: textarea
+    id: rollback
+    attributes:
+      label: 回滚结果
