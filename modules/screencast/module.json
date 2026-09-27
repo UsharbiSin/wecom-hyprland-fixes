@@ -1,0 +1,16 @@
+{
+  "id": "screencast",
+  "title": "Wayland 桌面共享",
+  "description": "通过 Portal 和 PipeWire 向内置会议提供桌面画面",
+  "dependencies": [
+    "g++",
+    "pkg-config"
+  ],
+  "artifacts": [
+    "libwecom-screencast.so"
+  ],
+  "preload": "libwecom-screencast.so",
+  "environment": {
+    "WECOM_SCREENSHARE": "1"
+  }
+}
