@@ -1,0 +1,80 @@
+{
+  "id": "docs-ime",
+  "title": "共享文档中文输入",
+  "description": "限定 Wine 11.18 的跨进程 XIM 提交桥",
+  "dependencies": [
+    "python3",
+    "i686-w64-mingw32-gcc",
+    "wine"
+  ],
+  "artifacts": [
+    "docs-ime-guard.exe",
+    "docs-ime-bridge.dll",
+    "start.py",
+    "module.json"
+  ],
+  "helpers": [
+    {
+      "runner": "python3",
+      "source": "start.py",
+      "args": [
+        "--prefix",
+        "{prefix}",
+        "--app-version",
+        "{app_version}"
+      ]
+    }
+  ],
+  "guards": [
+    {
+      "target": "/usr/lib/wine/i386-windows/imm32.dll",
+      "sha256":
+        "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d"
+    },
+    {
+      "target": "/usr/lib/wine/i386-windows/win32u.dll",
+      "sha256":
+        "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b"
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-windows/wow64win.dll",
+      "sha256":
+        "c217e8386fe0066f9b2891d267000a8d22672486ff82fa5bf03f97b0ae3dce6d"
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-unix/win32u.so",
+      "sha256":
+        "8da843a22773037d5b9e7482211ac7546bf8b4516e91bbc09e98b137bad5d485"
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-unix/winex11.so",
+      "sha256":
+        "8de01950449ff128622ab9c87431f3cf106ba5f9fa0040c3f23383e9e347a214"
+    },
+    {
+      "target": "{prefix}/drive_c/windows/syswow64/imm32.dll",
+      "sha256":
+        "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d"
+    },
+    {
+      "target": "{prefix}/drive_c/windows/syswow64/win32u.dll",
+      "sha256":
+        "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b"
+    },
+    {
+      "target": "{app_dir}/WXWork.exe",
+      "sha256":
+        "ca7280999c0ae011bf2fac296c24f796595f3558df784edc50dd3f9a6edac5d9"
+    },
+    {
+      "target": "{app_dir}/{app_version}/compatible_web/WXWorkWeb.exe",
+      "sha256":
+        "a65545b078578a0e694753ec3e6eda177acdb14a36a38cdcfe1fb8ab177966c8"
+    },
+    {
+      "target": "{app_dir}/{app_version}/wemail/WeMail.exe",
+      "sha256":
+        "7d24e5ae9620e81c952e1fa1408060748ad3e0be46e40e184ae7370aaaba7f13"
+    }
+  ]
+}
