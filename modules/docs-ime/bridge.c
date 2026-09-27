@@ -1,7 +1,8 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later
  * Wine 11.18 XIM updates are process local, even when the focused CEF
  * child belongs to another process. Transfer only verified document IME
- * updates and use public IMM APIs in the destination process.
+ * updates and use public IMM APIs in the destination process. Return the
+ * document's caret geometry to the source process, which owns the root XIC.
  */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -16,15 +17,18 @@ static INIT_ONCE initialized = INIT_ONCE_STATIC_INIT;
 static const struct bridge_config *config;
 static HANDLE mapping, stop_event;
 static NtMessageCall nt_call;
+static NtCallTwoParam nt_two_param;
 static UINT prime_message, ready_message, shutdown_message, ack_message;
+static UINT position_message;
 static LONG pinned;
 
 static __thread struct {
-    HWND receiver, marked_focus, composing_focus, controller;
+    HWND receiver, marked_focus, marked_root, composing_focus, controller;
     HKL previous_layout, activated_layout;
     HANDLE owner;
     DWORD token;
-    BOOL enabled, busy;
+    BOOL enabled, busy, position_busy, candidate_applied;
+    struct wecom_ime_candidate_packet last_candidate;
 } state;
 
 static void debug_log(const char *format, ...)
@@ -66,11 +70,15 @@ static BOOL CALLBACK initialize(PINIT_ONCE once, PVOID arg, PVOID *context)
     ready_message = RegisterWindowMessageW(IME_READY);
     shutdown_message = RegisterWindowMessageW(IME_SHUTDOWN);
     ack_message = RegisterWindowMessageW(IME_ACK);
+    position_message = RegisterWindowMessageW(IME_POSITION);
     HMODULE win32u = GetModuleHandleW(L"win32u.dll");
     if (win32u) {
         FARPROC address = GetProcAddress(win32u, "NtUserMessageCall");
         _Static_assert(sizeof(nt_call) == sizeof(address), "pointer ABI");
         memcpy(&nt_call, &address, sizeof(nt_call));
+        address = GetProcAddress(win32u, "NtUserCallTwoParam");
+        _Static_assert(sizeof(nt_two_param) == sizeof(address), "pointer ABI");
+        memcpy(&nt_two_param, &address, sizeof(nt_two_param));
     }
     mapping = OpenFileMappingW(FILE_MAP_READ, FALSE, IME_MAPPING);
     if (mapping)
@@ -115,6 +123,9 @@ static void cleanup(void)
     if (state.marked_focus &&
         GetPropW(state.marked_focus, IME_PROPERTY) == state.receiver)
         RemovePropW(state.marked_focus, IME_PROPERTY);
+    if (state.marked_root &&
+        GetPropW(state.marked_root, IME_SOURCE_PROPERTY) == state.receiver)
+        RemovePropW(state.marked_root, IME_SOURCE_PROPERTY);
     if (state.composing_focus && GetFocus() == state.composing_focus) {
         HIMC context = ImmGetContext(state.composing_focus);
         if (context) {
@@ -132,11 +143,132 @@ static void cleanup(void)
     if (state.owner) CloseHandle(state.owner);
     state.owner = NULL;
     state.receiver = state.marked_focus = state.composing_focus = NULL;
+    state.marked_root = NULL;
+    state.candidate_applied = FALSE;
+    memset(&state.last_candidate, 0, sizeof(state.last_candidate));
     state.previous_layout = state.activated_layout = NULL;
     if (state.controller)
         PostMessageW(state.controller, ack_message, GetCurrentThreadId(),
                      state.token);
     debug_log("cleanup token=%lu", state.token);
+}
+
+static BOOL map_points(HWND from, HWND to, RECT *rect)
+{
+    SetLastError(ERROR_SUCCESS);
+    return MapWindowPoints(from, to, (POINT *)rect, 2) ||
+        GetLastError() == ERROR_SUCCESS;
+}
+
+static LRESULT import_position(HWND sender, const COPYDATASTRUCT *copy)
+{
+    if (!live() || !nt_two_param || !copy ||
+        copy->dwData != WECOM_IME_CANDIDATE_MAGIC ||
+        !wecom_ime_candidate_packet_valid(copy->lpData, copy->cbData) ||
+        GetCurrentProcessId() != config->source_pid) return FALSE;
+    const struct wecom_ime_candidate_packet *p = copy->lpData;
+    HWND focus = (HWND)(ULONG_PTR)p->focus;
+    HWND root = (HWND)(ULONG_PTR)p->root;
+    DWORD root_pid = 0, focus_pid = 0, sender_pid = 0;
+    DWORD root_tid = GetWindowThreadProcessId(root, &root_pid);
+    DWORD focus_tid = GetWindowThreadProcessId(focus, &focus_pid);
+    DWORD sender_tid = GetWindowThreadProcessId(sender, &sender_pid);
+    HWND current_focus = GetFocus();
+    struct wecom_ime_candidate_route route = {
+        .token = state.token,
+        .source_pid = GetCurrentProcessId(),
+        .source_tid = GetCurrentThreadId(),
+        .focus = (DWORD)(ULONG_PTR)current_focus,
+        .root = (DWORD)(ULONG_PTR)GetAncestor(current_focus, GA_ROOT),
+        .root_pid = root_pid, .root_tid = root_tid,
+        .focus_pid = focus_pid, .focus_tid = focus_tid,
+        .sender_pid = sender_pid, .sender_tid = sender_tid,
+        .focus_matches = current_focus == focus,
+        .chain_matches = ime_document_window(config, focus, root),
+        .receiver_matches = state.marked_root == root &&
+            GetPropW(root, IME_SOURCE_PROPERTY) == state.receiver &&
+            GetPropW(focus, IME_PROPERTY) == sender &&
+            ime_is_class(sender, IME_CLASS),
+    };
+    if (!wecom_ime_candidate_route_valid(p, &route)) return FALSE;
+
+    /* Chromium has already converted DIPs to screen pixels. The Wine
+     * syscall maps root-client coordinates with per-monitor DPI internally;
+     * use the same context for the inverse mapping, then restore it on every
+     * path. Do not modify the source IMC's saved composition/candidate forms.
+     */
+    DPI_AWARENESS_CONTEXT previous = SetThreadDpiAwarenessContext(
+        DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    if (!previous) return FALSE;
+    BOOL accepted = FALSE;
+    RECT bounds;
+    RECT rect = {p->x, p->y + (LONG)p->line_height,
+                 p->x + 1, p->y + (LONG)p->line_height + 1};
+    if (GetClientRect(focus, &bounds) && map_points(focus, NULL, &bounds) &&
+        wecom_ime_candidate_in_bounds(p, bounds.left, bounds.top,
+                                      bounds.right, bounds.bottom) &&
+        map_points(NULL, root, &rect) && live() && GetFocus() == focus &&
+        GetAncestor(focus, GA_ROOT) == root &&
+        GetPropW(root, IME_SOURCE_PROPERTY) == state.receiver &&
+        GetPropW(focus, IME_PROPERTY) == sender)
+        accepted = !!nt_two_param((ULONG_PTR)root, (ULONG_PTR)&rect,
+                                 NTUSER_SET_IME_COMPOSITION_RECT);
+    SetThreadDpiAwarenessContext(previous);
+    if (accepted != state.candidate_applied ||
+        (accepted && memcmp(p, &state.last_candidate, sizeof(*p)))) {
+        debug_log("candidate focus=%p root=%p screen=%ld,%ld height=%lu "
+                  "accepted=%d", focus, root, (long)p->x, (long)p->y,
+                  (unsigned long)p->line_height, accepted);
+        if (accepted) state.last_candidate = *p;
+    }
+    state.candidate_applied = accepted;
+    return accepted;
+}
+
+static void publish_position(void)
+{
+    if (state.position_busy || !live() || !state.receiver ||
+        GetCurrentProcessId() == config->source_pid) return;
+    HWND focus = GetFocus(), root = GetAncestor(focus, GA_ROOT);
+    if (state.marked_focus != focus || !local_focus(focus, root) ||
+        GetPropW(focus, IME_PROPERTY) != state.receiver) return;
+    HWND source = (HWND)GetPropW(root, IME_SOURCE_PROPERTY);
+    DWORD source_pid = 0, root_pid = 0;
+    DWORD source_tid = GetWindowThreadProcessId(source, &source_pid);
+    DWORD root_tid = GetWindowThreadProcessId(root, &root_pid);
+    if (!source || source_pid != config->source_pid || root_pid != source_pid ||
+        source_tid != root_tid || !ime_is_class(source, IME_CLASS)) return;
+
+    state.position_busy = TRUE;
+    /* This pointer stays inside the CEF process and owning UI thread.
+     * Wine does not marshal IMECHARPOSITION in cross-process WM_IME_REQUEST.
+     * Chromium returns no geometry for non-text and password controls.
+     */
+    IMECHARPOSITION position = {.dwSize = sizeof(position), .dwCharPos = 0};
+    LRESULT available = SendMessageW(focus, WM_IME_REQUEST,
+        IMR_QUERYCHARPOSITION, (LPARAM)&position);
+    struct wecom_ime_candidate_packet packet = {
+        .magic = WECOM_IME_CANDIDATE_MAGIC, .size = sizeof(packet),
+        .token = state.token,
+        .source_pid = source_pid, .source_tid = source_tid,
+        .target_pid = GetCurrentProcessId(),
+        .target_tid = GetCurrentThreadId(),
+        .focus = (DWORD)(ULONG_PTR)focus, .root = (DWORD)(ULONG_PTR)root,
+        .x = position.pt.x, .y = position.pt.y,
+        .line_height = position.cLineHeight,
+    };
+    if (available &&
+        wecom_ime_candidate_packet_valid(&packet, sizeof(packet)) &&
+        local_focus(focus, root) &&
+        GetPropW(focus, IME_PROPERTY) == state.receiver &&
+        GetPropW(root, IME_SOURCE_PROPERTY) == source) {
+        COPYDATASTRUCT copy = {WECOM_IME_CANDIDATE_MAGIC,
+                               sizeof(packet), &packet};
+        DWORD_PTR accepted = 0;
+        SendMessageTimeoutW(source, WM_COPYDATA, (WPARAM)state.receiver,
+            (LPARAM)&copy, SMTO_ABORTIFHUNG, 250, &accepted);
+    }
+    state.position_busy = FALSE;
 }
 
 static LRESULT import_packet(HWND sender, const COPYDATASTRUCT *copy)
@@ -188,6 +320,8 @@ static LRESULT import_packet(HWND sender, const COPYDATASTRUCT *copy)
     debug_log("import comp=%lu result=%lu cursor=%lu accepted=%d",
               data->comp_len, data->result_len, data->cursor, ok);
     ImmReleaseContext(focus, context);
+    if (ok && state.receiver)
+        PostMessageW(state.receiver, position_message, state.token, 0);
     return ok;
 }
 
@@ -200,10 +334,19 @@ static LRESULT CALLBACK ipc_proc(HWND window, UINT message,
     }
     if (message == WM_TIMER && parameter == 1) {
         if (!live()) cleanup();
+        else publish_position();
         return 0;
     }
-    if (message == WM_COPYDATA)
+    if (message == position_message && parameter == state.token) {
+        publish_position();
+        return 0;
+    }
+    if (message == WM_COPYDATA) {
+        const COPYDATASTRUCT *copy = (const COPYDATASTRUCT *)data;
+        if (copy && copy->dwData == WECOM_IME_CANDIDATE_MAGIC)
+            return import_position((HWND)parameter, copy);
         return import_packet((HWND)parameter, (const COPYDATASTRUCT *)data);
+    }
     if (message == ready_message) {
         HWND focus = (HWND)parameter;
         if (!local_focus(focus, (HWND)data)) return FALSE;
@@ -227,7 +370,12 @@ static void prime(DWORD token)
         state.enabled = !!state.owner;
     }
     HWND focus = GetFocus(), root = GetAncestor(focus, GA_ROOT);
-    if (!local_focus(focus, root)) return;
+    DWORD root_pid = 0;
+    DWORD root_tid = GetWindowThreadProcessId(root, &root_pid);
+    BOOL source = live() && GetCurrentProcessId() == config->source_pid &&
+        root_pid == config->source_pid && root_tid == GetCurrentThreadId() &&
+        ime_source_window(config, root);
+    if (!source && !local_focus(focus, root)) return;
     if (!state.receiver) {
         WNDCLASSW cls = {0};
         cls.lpfnWndProc = ipc_proc;
@@ -249,17 +397,30 @@ static void prime(DWORD token)
         state.receiver = CreateWindowExW(WS_EX_NOACTIVATE, IME_CLASS,
             L"", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, instance, NULL);
         if (!state.receiver) return;
-        if (!SetTimer(state.receiver, 1, 1000, NULL)) {
+        if (!SetTimer(state.receiver, 1, 100, NULL)) {
             cleanup();
             return;
         }
         PostMessageW(state.controller, prime_message, GetCurrentThreadId(),
                      (LPARAM)state.receiver);
     }
+    if (source) {
+        if (state.marked_root != root) {
+            if (state.marked_root &&
+                GetPropW(state.marked_root, IME_SOURCE_PROPERTY) ==
+                state.receiver)
+                RemovePropW(state.marked_root, IME_SOURCE_PROPERTY);
+            state.marked_root = NULL;
+            if (SetPropW(root, IME_SOURCE_PROPERTY, state.receiver))
+                state.marked_root = root;
+        }
+        return;
+    }
     if (state.marked_focus != focus) {
         if (state.marked_focus &&
             GetPropW(state.marked_focus, IME_PROPERTY) == state.receiver)
             RemovePropW(state.marked_focus, IME_PROPERTY);
+        state.marked_focus = NULL;
         if (SetPropW(focus, IME_PROPERTY, state.receiver))
             state.marked_focus = focus;
     }

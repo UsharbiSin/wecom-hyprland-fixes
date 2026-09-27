@@ -18,6 +18,26 @@ MODULE = ROOT / "modules/docs-ime"
 
 
 class DocumentImePolicyTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("gcc"), "需要 gcc 编译候选框策略测试")
+    def test_candidate_coordinates_and_stale_replies(self):
+        with tempfile.TemporaryDirectory(prefix="wecom-ime-candidate-") as raw:
+            executable = Path(raw) / "candidate-policy"
+            build = subprocess.run([
+                "gcc", "-std=c11", "-Wall", "-Wextra", "-Werror",
+                "-fsanitize=undefined", "-fno-sanitize-recover=all",
+                str(ROOT / "tests/docs-ime-candidate-policy.c"),
+                "-o", str(executable),
+            ], capture_output=True, text=True, timeout=30)
+            self.assertEqual(build.returncode, 0, build.stdout + build.stderr)
+            result = subprocess.run(
+                [str(executable)], capture_output=True, text=True, timeout=10,
+            )
+            self.assertEqual(
+                result.returncode, 0, result.stdout + result.stderr,
+            )
+            self.assertIn("candidate coordinate and routing checks passed",
+                          result.stdout)
+
     @unittest.skipUnless(shutil.which("gcc"), "需要 gcc 编译纯 C 策略测试")
     def test_protocol_and_recipient_boundaries(self):
         with tempfile.TemporaryDirectory(prefix="wecom-ime-policy-") as raw:
@@ -50,6 +70,29 @@ class DocumentImePolicyTests(unittest.TestCase):
                 result.returncode, 0, result.stdout + result.stderr,
             )
             self.assertEqual(output.read_bytes()[:2], b"MZ")
+
+    @unittest.skipUnless(shutil.which("i686-w64-mingw32-gcc"),
+                         "需要 32 位 MinGW 编译输入法桥和守护进程")
+    def test_production_bridge_and_guard_build_without_app_files(self):
+        with tempfile.TemporaryDirectory(prefix="wecom-ime-build-") as raw:
+            folder = Path(raw)
+            targets = [
+                ("bridge.c", "docs-ime-bridge.dll",
+                 ["-shared", "-Wl,--kill-at", "-limm32", "-luser32"]),
+                ("guard.c", "docs-ime-guard.exe", ["-municode", "-luser32"]),
+            ]
+            for source, name, flags in targets:
+                with self.subTest(source=source):
+                    output = folder / name
+                    result = subprocess.run([
+                        "i686-w64-mingw32-gcc", "-std=c11", "-O2",
+                        "-Wall", "-Wextra", "-Werror",
+                        str(MODULE / source), "-o", str(output), *flags,
+                    ], cwd=folder, capture_output=True, text=True, timeout=30)
+                    self.assertEqual(
+                        result.returncode, 0, result.stdout + result.stderr,
+                    )
+                    self.assertEqual(output.read_bytes()[:2], b"MZ")
 
 
 class DocumentImeRuntimeGuards(unittest.TestCase):
