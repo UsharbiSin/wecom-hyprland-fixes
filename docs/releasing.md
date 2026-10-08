@@ -42,6 +42,15 @@ git push origin v0.2.0
 对应的非空变更章节、标签提交是否已进入 `main`，再执行离线质量检查。
 格式错误、缺少说明或未合并的标签都会在发布前失败。
 
+发布步骤再读取 GitHub 原生 Git ref/tag API，要求使用注释标签，
+其签名状态必须为 `verified: true` 且 `reason: valid`。
+标签名必须与触发版本一致，标签对象必须直接指向当前检出的 commit。
+轻量标签、未签名、签名未验证或目标不一致时拒绝创建 Release。
+`gh release create --verify-tag` 本身只确认远端标签存在，不验证签名。
+
+GitHub 分支规则中的签名要求约束提交，不替代发版标签验证。
+上述步骤只用于发布签名标签；不会增加 PR 提交签名检查或本地 GPG 验证。
+
 工作流使用 GitHub 内置令牌和 `contents: write` 权限创建 Release，
 无需额外 `RELEASE_TOKEN`。只使用固定提交的官方 checkout action。
 没有依赖安装、应用打包或附件上传步骤；只提供 GitHub 的源码归档。

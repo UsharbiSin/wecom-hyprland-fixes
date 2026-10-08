@@ -40,6 +40,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          python3 tools/verify-release-tag.py \
+            --repo="$GH_REPO" --tag="$RELEASE_TAG"
           if gh release view "$RELEASE_TAG" --json url --jq .url; then
             echo '该标签已有 Release，保留现有内容。'
             exit 0
