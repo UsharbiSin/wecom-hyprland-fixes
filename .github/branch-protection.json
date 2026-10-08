@@ -2,8 +2,7 @@
   "required_status_checks": {
     "strict": true,
     "checks": [
-      {"context": "质量检查", "app_id": 15368},
-      {"context": "GPG 签名检查", "app_id": 15368}
+      {"context": "质量检查", "app_id": 15368}
     ]
   },
   "enforce_admins": true,

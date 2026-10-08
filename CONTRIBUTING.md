@@ -26,15 +26,19 @@ git verify-commit HEAD
 git log --show-signature -1
 ```
 
-推送后，PR 检查会逐个验证提交的 GitHub 验证状态和 OpenPGP 签名类型。
+推送后，由 GitHub 原生 `required_signatures` 规则阻止未验证签名提交。
+`main` ruleset 启用此要求；Actions 不再重复验证 GPG 签名。
+本项目仍约定使用 GPG，原生规则本身接受 GitHub 支持的签名类型。
 
 ## 合并条件
 
-- 通过「质量检查」和「GPG 签名检查」。
+- 通过「质量检查」及 GitHub 原生签名规则。
+- 质量检查验证分支名、提交消息和 PR 标题，消息每行不超过 80 字符。
 - 分支保持最新，全部审查讨论已解决。
 - `main` 禁止强制推送和删除，保护规则同样适用于管理员。
 - 使用 Merge commit，保留功能提交及其原有 GPG 签名。
 - 禁用 Squash 和 Rebase 合并。
+- 不启用线性历史要求，以允许 Merge commit。
 - 合并后自动删除远端功能分支，关联 Issue 随 PR 关闭。
 
 GitHub 创建的合并提交使用 GitHub 的 GPG 签名，功能提交使用作者签名。
@@ -66,4 +70,7 @@ python3 tools/apply-github-policy.py --apply
 ```
 
 脚本配置必需检查、分支签名要求、管理员约束和 PR 合并方式。
-必需检查来自 GitHub Actions；签名检查要求 OpenPGP 签名。
+必需检查来自 GitHub Actions；签名要求使用 GitHub 原生分支保护 API。
+脚本保留现有 ruleset；维护者需确保其要求签名且不启用线性历史。
+
+版本标签、兼容范围和源码发版见[版本与发版](docs/releasing.md)。
