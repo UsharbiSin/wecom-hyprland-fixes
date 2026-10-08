@@ -11,8 +11,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parent
 SOURCE = Path("/usr/lib/wine/i386-windows/riched20.dll")
-EXPECTED = "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3"
-FIXED = "bbd98cd94d20d6858f99c7f5d5228bd76317b86dc0879e3f8f09780f4c7dfb12"
+PROFILES = json.loads((ROOT / "profiles.json").read_text())
 BASE, HOOK, STUB = 0x7AC00000, 0x32CB5, 0x3E400
 
 
@@ -22,7 +21,9 @@ def require(condition, message):
 
 
 def validate_source(original):
-    require(hashlib.sha256(original).hexdigest() == EXPECTED,
+    sha = hashlib.sha256(original).hexdigest()
+    profile = next((p for p in PROFILES if p["source_sha256"] == sha), None)
+    require(profile is not None,
             "原始 DLL 哈希不匹配；拒绝给未知 Wine 构建应用补丁")
     checks = (
         (HOOK, "b80d000000"),
@@ -38,10 +39,11 @@ def validate_source(original):
             "可执行节名称不匹配")
     require(struct.unpack_from("<IIII", original, 0x180) ==
             (0x3D358, 0x1000, 0x3E000, 0x1000), "可执行节布局不匹配")
+    return profile
 
 
 def apply_stub(original, stub):
-    validate_source(original)
+    profile = validate_source(original)
     require(len(stub) == 111, "回调机器码大小不匹配")
     require(set(original[STUB:STUB + len(stub)]) == {0},
             "预留空间不是全零，拒绝覆盖")
@@ -49,14 +51,14 @@ def apply_stub(original, stub):
     patched[HOOK:HOOK + 5] = b"\xe9" + struct.pack("<i", STUB - (HOOK + 5))
     patched[STUB:STUB + len(stub)] = stub
     struct.pack_into("<I", patched, 0x180, STUB + len(stub) - 0x1000)
-    require(hashlib.sha256(patched).hexdigest() == FIXED,
+    require(hashlib.sha256(patched).hexdigest() == profile["candidate_sha256"],
             "补丁结果哈希不匹配，拒绝输出")
     return patched
 
 
 def build(source, output):
     original = source.read_bytes()
-    validate_source(original)
+    profile = validate_source(original)
     output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="assemble-", dir=output) as temp:
         temp = Path(temp)
@@ -79,8 +81,7 @@ def build(source, output):
     (output / "callback.bin").write_bytes(stub)
     manifest = {
         "状态": "已构建",
-        "source_sha256": EXPECTED,
-        "candidate_sha256": FIXED,
+        **profile,
         "architecture": "i386 PE",
         "hook_rva": hex(HOOK),
         "stub_rva": hex(STUB),

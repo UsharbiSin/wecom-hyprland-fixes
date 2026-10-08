@@ -205,16 +205,27 @@ def equivalent(a, b):
     return a["value"] == b["value"]
 
 
-def check_targets(module, context):
+def check_targets(module, context, artifacts=None):
+    targets = {}
     for item in module.get("guards", []) + module.get("bindings", []):
         target = Path(expand(item["target"], context))
         if not target.is_file():
             raise ValueError(f"缺少目标文件：{target}")
-        if item.get("sha256") and digest(target) != item["sha256"]:
+        sha = digest(target)
+        if item.get("sha256") and sha != item["sha256"]:
             raise ValueError(f"版本哈希不匹配：{target.name}；请重新验证。")
+        if "sha256_pairs" in item:
+            expected = item["sha256_pairs"].get(sha)
+            if (not expected or artifacts is None or
+                    digest(Path(artifacts) / item["source"]) != expected):
+                raise ValueError(f"原件与补丁版本不匹配：{target.name}；请重新构建。")
+        targets[str(target)] = sha
+    return targets
 
 
 def build(args, module):
+    if module["id"] == "copyq":
+        return copyq_manager().manage("build")
     prefix = prefix_path(args.prefix)
     output = ROOT / "build" / module["id"]
     output.parent.mkdir(exist_ok=True)
@@ -250,6 +261,8 @@ def build(args, module):
 
 
 def install(args, module):
+    if module["id"] == "copyq":
+        return copyq_manager().manage("install", dry_run=args.dry_run)
     prefix = prefix_path(args.prefix)
     source = ROOT / "build" / module["id"]
     manifest = read_json(source / "build.json")
@@ -264,7 +277,7 @@ def install(args, module):
             raise ValueError(f"构建产物已改变：{name}")
     context = variables(prefix, args.app_version, module["id"])
     check_state_path(module, context)
-    check_targets(module, context)
+    check_targets(module, context, source)
     print(f"安装计划：{module['title']} → {context['module_dir']}")
     for entry in module.get("registry", []):
         print(f"注册表：{entry['key']} / {entry['name']}={entry['value']}")
@@ -281,7 +294,7 @@ def install(args, module):
     with locked(state):
         stopped(prefix)
         check_state_path(module, context)
-        check_targets(module, context)
+        targets = check_targets(module, context, source)
         destination = Path(context["module_dir"])
         if destination.exists():
             raise ValueError("模块已安装；先 remove，再构建和安装新版。")
@@ -289,12 +302,8 @@ def install(args, module):
         shutil.copytree(source, destination)
         saved = []
         record = dict(manifest)
-        record["targets"] = {
-            expand(item["target"], context): digest(
-                expand(item["target"], context)
-            )
-            for item in module.get("bindings", []) + module.get("guards", [])
-        }
+        # 记录已经配对校验的原件，不能用复制期间变动后的新哈希替换。
+        record["targets"] = targets
         record["registry"] = saved
         record["copies"] = []
         record["ready"] = False
@@ -329,11 +338,12 @@ def install(args, module):
                 saved.append({"entry": entry, "previous": previous})
                 write_json(destination / "installed.json", record)
                 reg_write(prefix, entry, entry)
-            record["ready"] = True
-            write_json(destination / "installed.json", record)
         finally:
             if registry_started:
                 finish_registry(prefix)
+        verify_installed_files(record, destination)
+        record["ready"] = True
+        write_json(destination / "installed.json", record)
     print("安装完成。使用本仓库 launch 启动才会加载文件修复。")
 
 
@@ -341,12 +351,9 @@ def installed(prefix):
     return sorted((state_path(prefix) / "modules").glob("*/installed.json"))
 
 
-def verify_record(path):
-    record = read_json(path)
-    if not record.get("ready"):
-        raise ValueError("上次安装未完成，请先 remove 回滚。")
+def verify_installed_files(record, directory):
     for name, sha in record["files"].items():
-        if digest(path.parent / name) != sha:
+        if digest(directory / name) != sha:
             raise ValueError(f"修复产物校验失败：{name}")
     for target, sha in record["targets"].items():
         if digest(target) != sha:
@@ -354,6 +361,13 @@ def verify_record(path):
     for item in record.get("copies", []):
         if digest(item["target"]) != item["sha256"]:
             raise ValueError("已安装兼容库发生变化，请人工核对。")
+
+
+def verify_record(path):
+    record = read_json(path)
+    if not record.get("ready"):
+        raise ValueError("上次安装未完成，请先 remove 回滚。")
+    verify_installed_files(record, path.parent)
     return record
 
 
@@ -373,6 +387,8 @@ def check_copies_for_rollback(record, folder):
 
 
 def remove(args):
+    if args.module == "copyq":
+        return copyq_manager().manage("remove")
     prefix = prefix_path(args.prefix)
     state = state_path(prefix)
     with locked(state):
@@ -405,16 +421,34 @@ def remove(args):
     print("模块已移除，原文件未被覆盖，注册表已恢复。")
 
 
+def copyq_manager():
+    # Keep the optional desktop module independent of Wine session state.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "copyq", ROOT / "tools/copyq.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def doctor(args):
-    prefix = prefix_path(args.prefix)
     failed = False
-    for path in installed(prefix):
+    paths = installed(prefix_path(args.prefix)) if args.prefix else []
+    for path in paths:
         try:
             verify_record(path)
             print(f"校验通过：{path.parent.name}")
         except (ValueError, OSError) as error:
             failed = True
             print(f"不可加载：{path.parent.name}：{error}")
+    try:
+        copyq_manager().doctor()
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+        failed = True
+        print(f"不可加载：copyq：{error}")
+    if not args.prefix:
+        print("未指定 --prefix；本次仅检查桌面 CopyQ 模块。")
     print("这里只检查安装状态和哈希；真实界面验收请按各模块文档操作。")
     if failed:
         raise ValueError("存在不可加载模块；请回滚或重新验证版本。")
