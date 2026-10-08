@@ -38,6 +38,7 @@
 | `camera` | Wine 11.17 摄像头格式枚举崩溃 | [摄像头修复][camera] |
 | `screencast` | 内置会议读取不到完整 Wayland 桌面 | [屏幕共享][screencast] |
 | `clipboard` | 双向图片粘贴、避免干扰 WPS 富格式 | [图片剪贴板][clipboard] |
+| `copyq` | 企业微信新图片历史缺少缩略图 | [CopyQ 历史预览][copyq] |
 
 没有默认安装全部功能的命令。请按问题选择模块，
 特别是 `camera` 仅适用于已核验的 Wine 11.17 组件。
@@ -72,6 +73,8 @@ export WECOM_PREFIX="$HOME/.local/share/wecom/prefix"
 
 原有启动器不会被改写，文件补丁需通过 `wecom-fix launch` 加载。
 Hyprland 规则、MIME 默认程序和微软运行库有独立的操作步骤。
+`copyq` 是用户桌面配置，无需构建或退出 Wine，
+直接运行 `./wecom-fix install copyq --dry-run` 查看安装计划。
 
 ## 使用手册
 
@@ -113,6 +116,7 @@ Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 [camera]: docs/features/camera.md
 [screencast]: docs/features/screencast.md
 [clipboard]: docs/features/clipboard.md
+[copyq]: docs/features/copyq.md
 [legacy]: docs/features/clipboard-legacy.md
 [install]: docs/usage/install.md
 [rollback]: docs/usage/rollback.md

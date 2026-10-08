@@ -1,0 +1,8 @@
+{
+  "id": "copyq",
+  "title": "CopyQ 企业微信图片历史预览",
+  "description": "仅为企业微信图片历史补充 PNG，不改写实时剪贴板。",
+  "scope": "desktop",
+  "dependencies": ["python3", "copyq"],
+  "artifacts": ["wecom-image-history.js"]
+}
