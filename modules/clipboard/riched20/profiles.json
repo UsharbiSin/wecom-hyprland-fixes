@@ -1,0 +1,16 @@
+[
+  {
+    "wine_build": "11.18-1",
+    "source_sha256":
+      "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3",
+    "candidate_sha256":
+      "bbd98cd94d20d6858f99c7f5d5228bd76317b86dc0879e3f8f09780f4c7dfb12"
+  },
+  {
+    "wine_build": "11.19-1",
+    "source_sha256":
+      "3b903f943ca5f65215d78fedaf30260b8e7ce8bb7626325a4c21db0f57a40295",
+    "candidate_sha256":
+      "4f8a275302cfc4cfbbf739d91615805fde85dda22b4bfaaae5f7ce40595f593a"
+  }
+]

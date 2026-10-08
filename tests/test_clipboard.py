@@ -1,6 +1,7 @@
 """剪贴板模块测试只处理合成路径与字节，不读取桌面选择。"""
 
 import importlib.util
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -24,6 +25,16 @@ CONFIGURE = load_script("clipboard_config", MODULE / "outbound/configure.py")
 
 
 class ClipboardGuards(unittest.TestCase):
+    def test_builder_verifier_and_bindings_share_exact_profiles(self):
+        module = json.loads((MODULE / "module.json").read_text())
+        pairs = {p["source_sha256"]: p["candidate_sha256"]
+                 for p in BUILD.PROFILES}
+        self.assertEqual(len(pairs), 2)
+        self.assertEqual(set(pairs.values()), VERIFY.FIXED)
+        self.assertTrue(set(pairs).isdisjoint(pairs.values()))
+        for binding in module["bindings"]:
+            self.assertEqual(binding["sha256_pairs"], pairs)
+
     def test_unknown_dll_is_rejected_before_output(self):
         with tempfile.TemporaryDirectory() as name:
             folder = Path(name)
