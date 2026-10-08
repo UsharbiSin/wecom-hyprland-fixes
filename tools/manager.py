@@ -215,6 +215,8 @@ def check_targets(module, context):
 
 
 def build(args, module):
+    if module["id"] == "copyq":
+        return copyq_manager().manage("build")
     prefix = prefix_path(args.prefix)
     output = ROOT / "build" / module["id"]
     output.parent.mkdir(exist_ok=True)
@@ -250,6 +252,8 @@ def build(args, module):
 
 
 def install(args, module):
+    if module["id"] == "copyq":
+        return copyq_manager().manage("install", dry_run=args.dry_run)
     prefix = prefix_path(args.prefix)
     source = ROOT / "build" / module["id"]
     manifest = read_json(source / "build.json")
@@ -373,6 +377,8 @@ def check_copies_for_rollback(record, folder):
 
 
 def remove(args):
+    if args.module == "copyq":
+        return copyq_manager().manage("remove")
     prefix = prefix_path(args.prefix)
     state = state_path(prefix)
     with locked(state):
@@ -405,16 +411,34 @@ def remove(args):
     print("模块已移除，原文件未被覆盖，注册表已恢复。")
 
 
+def copyq_manager():
+    # Keep the optional desktop module independent of Wine session state.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "copyq", ROOT / "tools/copyq.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def doctor(args):
-    prefix = prefix_path(args.prefix)
     failed = False
-    for path in installed(prefix):
+    paths = installed(prefix_path(args.prefix)) if args.prefix else []
+    for path in paths:
         try:
             verify_record(path)
             print(f"校验通过：{path.parent.name}")
         except (ValueError, OSError) as error:
             failed = True
             print(f"不可加载：{path.parent.name}：{error}")
+    try:
+        copyq_manager().doctor()
+    except (ValueError, OSError, subprocess.CalledProcessError) as error:
+        failed = True
+        print(f"不可加载：copyq：{error}")
+    if not args.prefix:
+        print("未指定 --prefix；本次仅检查桌面 CopyQ 模块。")
     print("这里只检查安装状态和哈希；真实界面验收请按各模块文档操作。")
     if failed:
         raise ValueError("存在不可加载模块；请回滚或重新验证版本。")
