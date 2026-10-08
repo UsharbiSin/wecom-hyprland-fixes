@@ -10,7 +10,8 @@ import subprocess
 import tempfile
 
 ROOT = Path(__file__).resolve().parent
-FIXED = "bbd98cd94d20d6858f99c7f5d5228bd76317b86dc0879e3f8f09780f4c7dfb12"
+PROFILES = json.loads((ROOT / "profiles.json").read_text())
+FIXED = {profile["candidate_sha256"] for profile in PROFILES}
 
 
 def require(condition, message):
@@ -20,7 +21,7 @@ def require(condition, message):
 
 def map_pe(data, new_base):
     # 在执行任何 DLL 字节之前，校验整个文件。
-    require(hashlib.sha256(data).hexdigest() == FIXED, "待测 DLL 哈希不匹配")
+    require(hashlib.sha256(data).hexdigest() in FIXED, "待测 DLL 哈希不匹配")
     pe = struct.unpack_from("<I", data, 0x3C)[0]
     opt = pe + 24
     base = struct.unpack_from("<I", data, opt + 28)[0]
@@ -94,19 +95,20 @@ def verify(build_dir):
             run = subprocess.run([str(folder / "test")],
                                  capture_output=True, timeout=15)
             if run.returncode:
-                details = (struct.unpack("<6I", run.stdout)
-                           if len(run.stdout) == 24 else run.stdout.hex())
+                details = (struct.unpack("<7I", run.stdout)
+                           if len(run.stdout) == 28 else run.stdout.hex())
                 raise RuntimeError((hex(base), run.returncode, details))
-            results.append({"base": hex(base), "cases": 14, "result": "PASS"})
+            results.append({"base": hex(base), "cases": 18, "result": "PASS"})
     report = {
         "说明": "模拟 COM，直接执行完整 i386 粘贴函数机器码",
-        "candidate_sha256": FIXED,
+        "candidate_sha256": hashlib.sha256(data).hexdigest(),
         "results": results,
         "覆盖": [
             "无回调原行为", "S_OK 继续默认或回调选择的格式",
             "CF_TEXT 正规化", "其他成功码短路", "失败码拒绝",
             "查询与实际粘贴标志", "数据对象恰好释放一次",
             "stdcall 栈平衡", "易失寄存器破坏", "PE 重定位",
+            "OleGetClipboard 失败不调用回调或释放对象", "GetData 失败仍仅释放一次",
         ],
         "clipboard_and_UI_used": False,
         "限制": "不能替代真实 Wine 加载和企业微信界面测试",
@@ -115,7 +117,7 @@ def verify(build_dir):
         json.dumps(report, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
-    print("RichEdit 完整机器码验证通过：两个地址，各 14 项")
+    print("RichEdit 完整机器码验证通过：两个地址，各 18 项")
 
 
 def main():

@@ -11,14 +11,22 @@
     {
       "source": "riched20.dll",
       "target": "/usr/lib/wine/i386-windows/riched20.dll",
-      "sha256":
-        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3"
+      "sha256_pairs": {
+        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3":
+          "bbd98cd94d20d6858f99c7f5d5228bd76317b86dc0879e3f8f09780f4c7dfb12",
+        "3b903f943ca5f65215d78fedaf30260b8e7ce8bb7626325a4c21db0f57a40295":
+          "4f8a275302cfc4cfbbf739d91615805fde85dda22b4bfaaae5f7ce40595f593a"
+      }
     },
     {
       "source": "riched20.dll",
       "target": "{prefix}/drive_c/windows/syswow64/riched20.dll",
-      "sha256":
-        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3"
+      "sha256_pairs": {
+        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3":
+          "bbd98cd94d20d6858f99c7f5d5228bd76317b86dc0879e3f8f09780f4c7dfb12",
+        "3b903f943ca5f65215d78fedaf30260b8e7ce8bb7626325a4c21db0f57a40295":
+          "4f8a275302cfc4cfbbf739d91615805fde85dda22b4bfaaae5f7ce40595f593a"
+      }
     }
   ],
   "helpers": [{"runner": "wine", "source": "wecom-png-outbound.exe"}]
