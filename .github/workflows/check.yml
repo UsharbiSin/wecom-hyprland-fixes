@@ -3,6 +3,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
 permissions:
   contents: read
 jobs:
@@ -12,50 +13,10 @@ jobs:
     steps:
       - name: 获取源码
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - name: 检查分支、提交与 PR 格式
+        if: github.event_name == 'pull_request'
+        run: python3 tools/check-contribution.py "$GITHUB_EVENT_PATH"
       - name: 检查格式、脚本和单元测试
         run: python3 tools/check.py
-  signatures:
-    name: GPG 签名检查
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-24.04
-    steps:
-      - name: 验证 PR 每个提交的 GPG 签名
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPO: ${{ github.repository }}
-          PR: ${{ github.event.pull_request.number }}
-        shell: bash
-        run: |
-          gh api --paginate "repos/$REPO/pulls/$PR/commits" \
-            --jq '.[].sha' > /tmp/commits
-          while IFS= read -r sha; do
-            gh api "repos/$REPO/commits/$sha" \
-              --jq '{v:.commit.verification,m:.commit.message}' \
-              > /tmp/signature.json
-            python3 - <<'PY'
-          import json
-          import re
-          from pathlib import Path
-          data = json.loads(Path('/tmp/signature.json').read_text())
-          v = data['v']
-          title = data['m'].splitlines()[0]
-          types = 'feat|fix|docs|refactor|test|build|ci|chore|perf|revert'
-          pattern = rf'^({types})(\([a-z0-9-]+\))?!?: .+'
-          assert re.fullmatch(pattern, title), title
-          assert all(len(line) <= 80 for line in data['m'].splitlines())
-          assert v['verified'] and v['reason'] == 'valid', v['reason']
-          assert 'BEGIN PGP SIGNATURE' in (v['signature'] or '')
-          PY
-          done < /tmp/commits
-          gh api "repos/$REPO/pulls/$PR" \
-            --jq '{title,branch:.head.ref}' > /tmp/pull.json
-          python3 - <<'PY'
-          import json
-          import re
-          from pathlib import Path
-          data = json.loads(Path('/tmp/pull.json').read_text())
-          types = 'feat|fix|docs|refactor|test|build|ci|chore|perf|revert'
-          assert re.fullmatch(
-              rf'^({types})(\([a-z0-9-]+\))?!?: .+', data['title'])
-          assert re.fullmatch(rf'({types})/[a-z0-9-]+', data['branch'])
-          PY
