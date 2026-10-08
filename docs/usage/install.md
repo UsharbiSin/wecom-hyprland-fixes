@@ -37,6 +37,7 @@ Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
 | camera | Wine 11.17 匹配库/头文件、官方源码、GCC、V4L2 |
 | screencast | G++、pkg-config、libportal、PipeWire、X11 开发文件 |
 | clipboard | Python、binutils、GCC/G++、x86_64 MinGW G++ |
+| copyq | Python 3.11 以上、正在运行的 CopyQ；无需编译或 Wine 会话 |
 
 原生桌面共享还需要工作的 PipeWire、xdg-desktop-portal 和对应桌面后端。
 系统依赖需自行安装，无需为了使用其他模块降级整个系统的 Wine。
@@ -52,6 +53,8 @@ Wine 历史修复基线为 `11.17`，图片剪贴板为 `11.18`。
 构建产物在仓库 `build/<模块>/`；模块之间互不覆盖。
 输出产物哈希、适用前缀、应用版本和模块定义进入本地构建清单。
 构建不会启用模块；安装后需要从统一入口启动才会加载修复。
+`copyq` 桌面规则无需构建，通过 `install copyq` 单独启用，
+不依赖 `launch`。详情见 [CopyQ 历史预览](../features/copyq.md)。
 依赖不足或哈希不符会立即报错；不要删除检查来“继续安装”。
 
 没有默认的“安装全部”命令：摄像头与剪贴板的已核验 Wine 版本不同，
@@ -119,6 +122,7 @@ python3 build/docs-ime/start.py --prefix "$WECOM_PREFIX"
 - [Thunar/WPS 默认程序与 Wine 文件关联](../features/desktop.md)。
 - [微软运行库安装](../features/meeting.md)。
 - [停用旧剪贴板转换服务](../features/clipboard-legacy.md)。
+- [CopyQ 企业微信图片历史预览](../features/copyq.md)。
 
 这些操作有独立的影响范围和恢复方法，不要把它们等同于 DLL 模块回滚。
 
@@ -130,6 +134,7 @@ python3 build/docs-ime/start.py --prefix "$WECOM_PREFIX"
 | 仓库 `build/<模块>/` | 当前构建产物与适用前缀清单 |
 | XDG 数据目录 `wecom-fixes/<摘要>/modules/` | 安装副本与回滚状态 |
 | XDG 数据目录 `wecom-fixes/<摘要>/` | 会话锁、启动描述及私有请求队列 |
+| XDG 数据目录 `wecom-fixes/copyq/` | CopyQ 原生命令备份与专用规则状态 |
 
 XDG 数据目录默认是 `~/.local/share`；摘要来自完整前缀路径。
 安装状态目录只允许当前用户访问，保存卸载所需的原值和备份。
