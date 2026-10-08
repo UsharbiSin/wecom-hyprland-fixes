@@ -1,0 +1,17 @@
+# 沿用 tongyan_reports 的中文分类；兼容仓库现有标签名称。
+changelog:
+  exclude:
+    labels: [release]
+  categories:
+    - title: '🚀 新特性 (Features)'
+      labels: [feature, enhancement]
+    - title: '🐛 缺陷修复 (Bug Fixes)'
+      labels: [bug, fix, hotfix]
+    - title: '⚡ 性能优化 (Performance)'
+      labels: [perf, performance]
+    - title: '📝 文档变动 (Documentation)'
+      labels: [docs, documentation]
+    - title: '🔧 重构与工程基建 (Chore & CI)'
+      labels: [chore, ci, refactor, test, style]
+    - title: '其他变动 (Other Changes)'
+      labels: ['*']
