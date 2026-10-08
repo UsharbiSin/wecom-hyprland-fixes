@@ -1,0 +1,56 @@
+name: 发布版本
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: 检查并发布源码
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.ref_name }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: 获取标签源码
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 检查版本说明与主分支归属
+        shell: bash
+        run: |
+          python3 tools/release-notes.py --tag="$RELEASE_TAG" \
+            --output="$RUNNER_TEMP/release-notes.md"
+          git merge-base --is-ancestor HEAD origin/main
+      - name: 检查格式、脚本和离线测试
+        run: python3 tools/check.py
+      - name: 生成分类说明并发布
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          python3 tools/verify-release-tag.py \
+            --repo="$GH_REPO" --tag="$RELEASE_TAG"
+          if gh release view "$RELEASE_TAG" --json url --jq .url; then
+            echo '该标签已有 Release，保留现有内容。'
+            exit 0
+          fi
+          gh api "repos/$GH_REPO/releases/generate-notes" \
+            --method POST \
+            -f tag_name="$RELEASE_TAG" \
+            -f configuration_file_path=.github/release.yml \
+            --jq .body >> "$RUNNER_TEMP/release-notes.md"
+          gh release create "$RELEASE_TAG" --verify-tag \
+            --title "$RELEASE_TAG" \
+            --notes-file "$RUNNER_TEMP/release-notes.md"
