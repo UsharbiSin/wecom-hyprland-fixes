@@ -21,12 +21,25 @@ def verify(prefix, version, manifest=None):
     }
     if manifest is None:
         manifest = json.loads((HERE / "module.json").read_text())
+    profiles = None
     for item in manifest["guards"]:
+        if not any(key in item for key in ("sha256", "sha256_by_profile")):
+            raise ValueError("输入法桥组件缺少哈希限制。")
         path = Path(item["target"].format_map(context))
         with path.open("rb") as stream:
             actual = hashlib.file_digest(stream, "sha256").hexdigest()
-        if actual != item["sha256"]:
+        if "sha256" in item and actual != item["sha256"]:
             raise ValueError(f"输入法桥组件哈希不匹配：{path.name}")
+        if "sha256_by_profile" in item:
+            allowed = item["sha256_by_profile"]
+            if not isinstance(allowed, dict):
+                raise ValueError("输入法桥组件哈希配置无效。")
+            matched = {key for key, sha in allowed.items() if sha == actual}
+            profiles = matched if profiles is None else profiles & matched
+            if not profiles:
+                raise ValueError(
+                    f"输入法桥组件哈希不匹配或 Wine 版本混用：{path.name}")
+    return sorted(profiles)[0] if profiles else None
 
 
 def main():
@@ -38,7 +51,9 @@ def main():
     args = parser.parse_args()
     try:
         if not args.stop:
-            verify(args.prefix, args.app_version)
+            profile = verify(args.prefix, args.app_version)
+            if profile:
+                print(f"输入法桥组件校验通过：{profile}", flush=True)
         if args.verify_only:
             return 0
         env = os.environ.copy()

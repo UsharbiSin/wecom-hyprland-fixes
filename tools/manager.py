@@ -207,13 +207,26 @@ def equivalent(a, b):
 
 def check_targets(module, context, artifacts=None):
     targets = {}
+    profiles = None
     for item in module.get("guards", []) + module.get("bindings", []):
+        if not any(key in item for key in
+                   ("sha256", "sha256_by_profile", "sha256_pairs")):
+            raise ValueError("目标组件缺少哈希限制。")
         target = Path(expand(item["target"], context))
         if not target.is_file():
             raise ValueError(f"缺少目标文件：{target}")
         sha = digest(target)
-        if item.get("sha256") and sha != item["sha256"]:
+        if "sha256" in item and sha != item["sha256"]:
             raise ValueError(f"版本哈希不匹配：{target.name}；请重新验证。")
+        if "sha256_by_profile" in item:
+            allowed = item["sha256_by_profile"]
+            if not isinstance(allowed, dict):
+                raise ValueError("组件哈希配置无效。")
+            matched = {key for key, value in allowed.items() if sha == value}
+            profiles = matched if profiles is None else profiles & matched
+            if not profiles:
+                raise ValueError(
+                    f"版本哈希不匹配或 Wine 版本混用：{target.name}；请重新验证。")
         if "sha256_pairs" in item:
             expected = item["sha256_pairs"].get(sha)
             if (not expected or artifacts is None or
