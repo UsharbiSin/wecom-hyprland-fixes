@@ -1,7 +1,7 @@
 {
   "id": "docs-ime",
   "title": "共享文档中文输入",
-  "description": "限定 Wine 11.18 的跨进程 XIM 提交桥",
+  "description": "限定 Wine 11.18/11.19 已验证构建的跨进程 XIM 提交桥",
   "dependencies": [
     "python3",
     "i686-w64-mingw32-gcc",
@@ -28,38 +28,66 @@
   "guards": [
     {
       "target": "/usr/lib/wine/i386-windows/imm32.dll",
-      "sha256":
-        "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d",
+        "wine-11.19-1":
+          "ddbbaf2c8ff81f7e5979b072df5988dfb4e8412e06fe2d7316f4f19f77663273"
+      }
     },
     {
       "target": "/usr/lib/wine/i386-windows/win32u.dll",
-      "sha256":
-        "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b",
+        "wine-11.19-1":
+          "f7ac8dd5c60c4bc462eb6687f21c291401a95e8c9f4a4d4a3979d0cfdead2597"
+      }
     },
     {
       "target": "/usr/lib/wine/x86_64-windows/wow64win.dll",
-      "sha256":
-        "c217e8386fe0066f9b2891d267000a8d22672486ff82fa5bf03f97b0ae3dce6d"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "c217e8386fe0066f9b2891d267000a8d22672486ff82fa5bf03f97b0ae3dce6d",
+        "wine-11.19-1":
+          "969fe698428098c346068c0e72cc3eb2c22c9e95e29e12afceae9aaf6bd7ee12"
+      }
     },
     {
       "target": "/usr/lib/wine/x86_64-unix/win32u.so",
-      "sha256":
-        "8da843a22773037d5b9e7482211ac7546bf8b4516e91bbc09e98b137bad5d485"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "8da843a22773037d5b9e7482211ac7546bf8b4516e91bbc09e98b137bad5d485",
+        "wine-11.19-1":
+          "b9c4ebcd4e3f05e3f6ce99fb35dcf1b75bb1a8ba63ac3bc474bf51b6801a7caf"
+      }
     },
     {
       "target": "/usr/lib/wine/x86_64-unix/winex11.so",
-      "sha256":
-        "8de01950449ff128622ab9c87431f3cf106ba5f9fa0040c3f23383e9e347a214"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "8de01950449ff128622ab9c87431f3cf106ba5f9fa0040c3f23383e9e347a214",
+        "wine-11.19-1":
+          "b2bcf5b088317d52eddf488d76cfa4e61f4a70ea1d1f9f68c5a682937efdb55a"
+      }
     },
     {
       "target": "{prefix}/drive_c/windows/syswow64/imm32.dll",
-      "sha256":
-        "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "30fc3403959f6aa7364c080de1b220eccab7aaac78f199fd6b49d60d7c75180d",
+        "wine-11.19-1":
+          "ddbbaf2c8ff81f7e5979b072df5988dfb4e8412e06fe2d7316f4f19f77663273"
+      }
     },
     {
       "target": "{prefix}/drive_c/windows/syswow64/win32u.dll",
-      "sha256":
-        "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b"
+      "sha256_by_profile": {
+        "wine-11.18-1":
+          "20e4abf0e1b7718dacf355bd6d6c7d6d41533d83640bf9bd0f542703410a793b",
+        "wine-11.19-1":
+          "f7ac8dd5c60c4bc462eb6687f21c291401a95e8c9f4a4d4a3979d0cfdead2597"
+      }
     },
     {
       "target": "{app_dir}/WXWork.exe",

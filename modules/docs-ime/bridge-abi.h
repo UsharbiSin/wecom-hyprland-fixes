@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later
- * Wine 11.18 private declarations from include/immdev.h and ntuser.h:
+ * Wine 11.18/11.19 private declarations from include/immdev.h and ntuser.h:
  * Copyright 2007 CodeWeavers, Aric Stewart
  * Copyright 2021 Jacek Caban for CodeWeavers
  * License: ../../licenses/LGPL-2.1-or-later.txt
@@ -39,6 +39,12 @@ struct ime_driver_call_params {
     WINE_COMPOSITIONSTRING *compstr;
     BOOL *key_consumed;
 };
+_Static_assert(sizeof(struct ime_driver_call_params) == 16,
+               "Wine i686 driver-call ABI changed");
+_Static_assert(offsetof(struct ime_driver_call_params, compstr) == 8,
+               "Wine i686 composition pointer offset changed");
+_Static_assert(offsetof(struct ime_driver_call_params, key_consumed) == 12,
+               "Wine i686 consumed pointer offset changed");
 typedef LRESULT (WINAPI *NtMessageCall)(HWND, UINT, WPARAM, LPARAM,
                                       void *, DWORD, BOOL);
 typedef ULONG_PTR (WINAPI *NtCallTwoParam)(ULONG_PTR, ULONG_PTR, ULONG);

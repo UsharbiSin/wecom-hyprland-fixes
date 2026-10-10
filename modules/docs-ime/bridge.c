@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later
- * Wine 11.18 XIM updates are process local, even when the focused CEF
+ * Wine 11.18/11.19 XIM updates are process local, even when the focused CEF
  * child belongs to another process. Transfer only verified document IME
  * updates and use public IMM APIs in the destination process. Return the
  * document's caret geometry to the source process, which owns the root XIC.
@@ -447,6 +447,9 @@ static void transfer(const CWPSTRUCT *message)
         SMTO_ABORTIFHUNG, 250, &ready) || !ready) goto done;
     WINE_COMPOSITIONSTRING sizing = {0};
     BOOL consumed = FALSE;
+    /* Only read an existing update (state == NULL). Wine 11.19 changed
+     * posting and key processing, not this queue-read ABI.
+     */
     struct ime_driver_call_params params = {NULL, NULL, &sizing, &consumed};
     LONG status = nt_call(message->hwnd, WINE_IME_TO_ASCII_EX, VK_PROCESSKEY,
         message->lParam, &params, NTUSER_IME_DRIVER_CALL, FALSE);
