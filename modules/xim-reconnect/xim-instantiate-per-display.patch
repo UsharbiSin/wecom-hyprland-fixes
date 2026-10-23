@@ -1,0 +1,97 @@
+--- a/modules/im/ximcp/imInsClbk.c
++++ b/modules/im/ximcp/imInsClbk.c
+@@ -55,6 +55,19 @@
+ static XimInstCallback	callback_list	= NULL;
+ static Bool		lock		= False;
+ 
++/* A process can use several independent Display connections.  Each one
++ * needs its own root-window filter while it has instantiate callbacks. */
++static Bool
++HasCallbacksForDisplay(Display *display)
++{
++    XimInstCallback icb;
++
++    for (icb = callback_list; icb; icb = icb->next)
++        if (icb->display == display && !icb->destroy)
++            return True;
++    return False;
++}
++
+ 
+ static void
+ MakeLocale( XLCd lcd, char locale[] )
+@@ -111,7 +124,7 @@
+     for( ii = 0; ii < nitems; ii++ ) {
+ 	if(XGetSelectionOwner (display, atoms[ii])) {
+ 	    for( icb = callback_list; icb; icb = icb->next ) {
+-		if( !icb->call  &&  !icb->destroy ) {
++		if( icb->display == display && !icb->call && !icb->destroy ) {
+ 		    xim = (*icb->lcd->methods->open_im)( icb->lcd, display,
+ 							 icb->rdb,
+ 							 icb->res_name,
+@@ -137,6 +150,11 @@
+ 		callback_list = icb->next;
+ 	    tmp = icb;
+ 	    icb = icb->next;
++            if (!HasCallbacksForDisplay(tmp->display))
++                _XUnregisterFilter(tmp->display, RootWindow(tmp->display, 0),
++                                   _XimFilterPropertyNotify, (XPointer)NULL);
++            _XCloseLC(tmp->lcd);
++            XFree(tmp->modifiers);
+ 	    XFree( tmp );
+ 	}
+ 	else {
+@@ -165,6 +183,7 @@
+     char		*modifiers = NULL;
+     Window		root;
+     XWindowAttributes	attr;
++    Bool                first_for_display;
+ 
+     if( lock )
+ 	return( False );
+@@ -191,6 +210,7 @@
+     icb->client_data = client_data;
+     icb->next = NULL;
+ 
++    first_for_display = !HasCallbacksForDisplay(display);
+     if( !callback_list )
+ 	callback_list = icb;
+     else {
+@@ -200,7 +220,7 @@
+ 
+     xim = (*lcd->methods->open_im)( lcd, display, rdb, res_name, res_class );
+ 
+-    if( icb == callback_list ) {
++    if( first_for_display ) {
+ 	root = RootWindow( display, 0 );
+ 	XGetWindowAttributes( display, root, &attr );
+ 	_XRegisterFilterByType( display, root, PropertyNotify, PropertyNotify,
+@@ -243,7 +263,7 @@
+     MakeLocale( lcd, locale );
+ 
+     for( icb = callback_list, picb = NULL; icb; picb = icb, icb = icb->next ) {
+-	if( !strcmp( locale, icb->name )  &&
++	if( icb->display == display && !strcmp( locale, icb->name )  &&
+ 	    (lcd->core->modifiers == icb->modifiers  ||		/* XXXXX */
+ 	     (lcd->core->modifiers  &&  icb->modifiers  &&
+ 	      !strcmp( lcd->core->modifiers, icb->modifiers )))  &&
+@@ -260,14 +280,14 @@
+ 	    if( lock )
+ 		icb->destroy = True;
+ 	    else {
+-		if( !picb ) {
++		if( !picb )
+ 		    callback_list = icb->next;
+-		    _XUnregisterFilter( display, RootWindow(display, 0),
+-					_XimFilterPropertyNotify,
+-					(XPointer)NULL );
+-		}
+ 		else
+ 		    picb->next = icb->next;
++                if (!HasCallbacksForDisplay(display))
++                    _XUnregisterFilter(display, RootWindow(display, 0),
++                                       _XimFilterPropertyNotify,
++                                       (XPointer)NULL);
+ 		_XCloseLC( icb->lcd );
+ 		XFree( icb->modifiers );
+ 		XFree( icb );
