@@ -1,0 +1,107 @@
+[
+  {
+    "library": "system",
+    "case": "first-display-only",
+    "returncode": 1,
+    "stdout": "first-display-only first=1 second=1 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "second-display-only",
+    "returncode": 1,
+    "stdout": "second-display-only first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "second-display-remove-first",
+    "returncode": 1,
+    "stdout": "second-display-remove-first first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "same-display-remove-first",
+    "returncode": 1,
+    "stdout": "same-display-remove-first first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "deferred-unregister",
+    "returncode": 0,
+    "stdout": "deferred-unregister first=1 second=1 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "fixed",
+    "case": "first-display-only",
+    "returncode": 0,
+    "stdout": "first-display-only first=1 second=0 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "fixed",
+    "case": "second-display-only",
+    "returncode": 0,
+    "stdout": "second-display-only first=0 second=1 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "fixed",
+    "case": "second-display-remove-first",
+    "returncode": 0,
+    "stdout": "second-display-remove-first first=0 second=1 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "fixed",
+    "case": "same-display-remove-first",
+    "returncode": 0,
+    "stdout": "same-display-remove-first first=0 second=1 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "fixed",
+    "case": "deferred-unregister",
+    "returncode": 0,
+    "stdout": "deferred-unregister first=1 second=1 PASS",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "first-display-only",
+    "returncode": 1,
+    "stdout": "first-display-only first=1 second=1 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "second-display-only",
+    "returncode": 1,
+    "stdout": "second-display-only first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "second-display-remove-first",
+    "returncode": 1,
+    "stdout": "second-display-remove-first first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "same-display-remove-first",
+    "returncode": 1,
+    "stdout": "same-display-remove-first first=0 second=0 FAIL",
+    "stderr": ""
+  },
+  {
+    "library": "system",
+    "case": "deferred-unregister",
+    "returncode": 0,
+    "stdout": "deferred-unregister first=1 second=1 PASS",
+    "stderr": ""
+  }
+]

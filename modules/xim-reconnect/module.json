@@ -1,0 +1,27 @@
+{
+  "id": "xim-reconnect",
+  "title": "输入法重启后的中文重连",
+  "description": "按Display维护XIM发现回调，修复Fcitx重启后企业微信中文输入失效",
+  "dependencies": [
+    "python3",
+    "bwrap",
+    "wine",
+    "curl",
+    "tar",
+    "patch",
+    "make",
+    "cc",
+    "pkg-config"
+  ],
+  "artifacts": [
+    "libX11.so.6.4.0"
+  ],
+  "bindings": [
+    {
+      "source": "libX11.so.6.4.0",
+      "target": "/usr/lib/libX11.so.6.4.0",
+      "sha256":
+        "8d818805efd9e4c08d44981093f99afa2641f3dbefd70770788a570fb7ef8ecf"
+    }
+  ]
+}

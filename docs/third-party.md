@@ -7,6 +7,9 @@
 - 文档中文输入桥及其 Wine 私有接口声明采用 LGPL-2.1-or-later，
   声明来源为 Wine `11.18/11.19` 的 `immdev.h` 与 `ntuser.h`，保留版权。
   [功能说明](features/docs-ime.md)列出源端 XIM 与目标兼容层的上游链接。
+- XIM 重连模块基于官方 libX11 1.8.13，保留各源文件版权和许可。
+  完整上游许可位于 `licenses/libX11.txt`；
+  [模块说明](../modules/xim-reconnect/README.md)列出源码地址、哈希与补丁范围。
 - CEF/V8/企业微信 DLL 使用本地已安装版本作为补丁输入。
 - 微软 VC++ 运行库由用户从官方渠道取得，遵循微软的许可和安装流程。
 - libportal、PipeWire、X11 等是系统动态依赖，遵循各自文件的许可证；

@@ -34,6 +34,7 @@
 | `desktop` | 用 Thunar 打开文件夹、办公文件和链接转接 | [桌面集成][desktop] |
 | `docs` | 共享文档白屏、文档宿主 DPI 不一致 | [文档修复][documents] |
 | `docs-ime` | 文档中文未上屏、候选停留在旧聊天位置 | [文档中文输入][docs-ime] |
+| `xim-reconnect` | Fcitx 重启后聊天中文输入失效 | [输入法重连][xim-reconnect] |
 | `meeting` | 内置会议入口缺失及并发运行库加载 | [会议依赖][meeting] |
 | `camera` | Wine 11.17 摄像头格式枚举崩溃 | [摄像头修复][camera] |
 | `screencast` | 内置会议读取不到完整 Wayland 桌面 | [屏幕共享][screencast] |
@@ -123,3 +124,5 @@ Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 [legacy]: docs/features/clipboard-legacy.md
 [install]: docs/usage/install.md
 [rollback]: docs/usage/rollback.md
+
+[xim-reconnect]: modules/xim-reconnect/README.md
