@@ -29,7 +29,7 @@ class ClipboardGuards(unittest.TestCase):
         module = json.loads((MODULE / "module.json").read_text())
         pairs = {p["source_sha256"]: p["candidate_sha256"]
                  for p in BUILD.PROFILES}
-        self.assertEqual(len(pairs), 2)
+        self.assertEqual(len(pairs), 3)
         self.assertEqual(set(pairs.values()), VERIFY.FIXED)
         self.assertTrue(set(pairs).isdisjoint(pairs.values()))
         for binding in module["bindings"]:
