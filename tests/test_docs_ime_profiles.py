@@ -1,7 +1,8 @@
-"""双版本输入桥和统一管理器必须信任同一套完整组件，不能逐项混用。"""
+"""多版本输入桥和统一管理器必须信任同一套完整组件，不能逐项混用。"""
 import hashlib
 import importlib.util
 import json
+import itertools
 from pathlib import Path
 import sys
 import tempfile
@@ -10,6 +11,8 @@ from unittest import mock
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / "modules/docs-ime"
+PROFILES = ("wine-11.18-1", "wine-11.19-1",
+            "wine-11.20-1", "wine-11.21-1")
 sys.path.insert(0, str(ROOT / "tools"))
 import manager
 
@@ -31,7 +34,7 @@ class DocumentImeProfileTests(unittest.TestCase):
         self.manifest = {"guards": []}
         for path in self.paths:
             values = {profile: self.content(path, profile) for profile in
-                      ("wine-11.18-1", "wine-11.19-1")}
+                      PROFILES}
             self.manifest["guards"].append({
                 "target": str(path), "sha256_by_profile": {
                     profile: hashlib.sha256(value).hexdigest()
@@ -64,7 +67,7 @@ class DocumentImeProfileTests(unittest.TestCase):
                         manager.check_targets(self.manifest, self.context)
 
     def test_complete_old_and_new_profiles_are_accepted(self):
-        for profile in ("wine-11.18-1", "wine-11.19-1"):
+        for profile in PROFILES:
             with self.subTest(profile=profile):
                 self.write_profile(profile)
                 self.assertEqual(self.start.verify(
@@ -73,8 +76,7 @@ class DocumentImeProfileTests(unittest.TestCase):
                 self.assertEqual(len(targets), len(self.paths) + 1)
 
     def test_each_mixed_system_or_prefix_component_is_rejected(self):
-        for profile, other in (("wine-11.18-1", "wine-11.19-1"),
-                               ("wine-11.19-1", "wine-11.18-1")):
+        for profile, other in itertools.permutations(PROFILES, 2):
             for path in self.paths:
                 with self.subTest(profile=profile, component=path.name):
                     self.write_profile(profile)
@@ -90,17 +92,19 @@ class DocumentImeProfileTests(unittest.TestCase):
         self.assert_rejected("版本混用")
 
     def test_unknown_component_is_rejected_without_rewriting(self):
-        for path in self.paths:
-            with self.subTest(component=path.name):
-                self.write_profile("wine-11.19-1")
+        for profile, path in itertools.product(PROFILES, self.paths):
+            with self.subTest(profile=profile, component=path.name):
+                self.write_profile(profile)
                 path.write_bytes(b"unknown Wine build")
                 self.assert_rejected()
                 self.assertEqual(path.read_bytes(), b"unknown Wine build")
 
     def test_fixed_application_hash_is_still_required(self):
-        self.write_profile("wine-11.19-1")
-        self.host.write_bytes(b"changed application")
-        self.assert_rejected()
+        for profile in PROFILES:
+            with self.subTest(profile=profile):
+                self.write_profile(profile)
+                self.host.write_bytes(b"changed application")
+                self.assert_rejected()
 
     def test_invalid_or_empty_profile_configuration_is_rejected(self):
         for value in ({}, [], None):
@@ -146,7 +150,33 @@ class DocumentImeProfileTests(unittest.TestCase):
         verify.assert_not_called()
         self.assertEqual(execute.call_args.args[1][-1], "--stop")
 
-    def test_production_manifest_keeps_seven_complete_wine_pairs(self):
+    def test_legacy_profile_values_remain_unchanged(self):
+        # Snapshot of the reviewed 11.20 prerequisite (6e47d13), not current
+        # manifest values: keeping an old key with new hashes is not support.
+        expected = {
+            "wine-11.18-1":
+                ("083aca75078836aa3b042fa4c11709be"
+                 "2e330d7ba942339a9c443ffbcf26113e"),
+            "wine-11.19-1":
+                ("5b87f58f78718feefe7b97d01f5c328e"
+                 "c3779eb9e079303d84f14022bbb3d226"),
+            "wine-11.20-1":
+                ("fa5c6b65c214ecf53eac69d39c4b956d"
+                 "f2b28aac3976b4b5915b9eba008c2d7f"),
+        }
+        manifest = json.loads((MODULE / "module.json").read_text())
+        for version, digest in expected.items():
+            with self.subTest(version=version):
+                pairs = {
+                    item["target"]: item["sha256_by_profile"][version]
+                    for item in manifest["guards"]
+                    if "sha256_by_profile" in item
+                }
+                actual = hashlib.sha256(
+                    json.dumps(pairs, sort_keys=True).encode()).hexdigest()
+                self.assertEqual(actual, digest)
+
+    def test_production_manifest_keeps_seven_complete_wine_components(self):
         manifest = json.loads((MODULE / "module.json").read_text())
         profiles = [item for item in manifest["guards"]
                     if "sha256_by_profile" in item]
@@ -155,7 +185,7 @@ class DocumentImeProfileTests(unittest.TestCase):
         self.assertEqual(len(fixed), 3)
         for item in profiles:
             allowed = item["sha256_by_profile"]
-            self.assertEqual(set(allowed), {"wine-11.18-1", "wine-11.19-1"})
+            self.assertEqual(set(allowed), set(PROFILES))
             for value in allowed.values():
                 self.assertRegex(value, r"^[a-f0-9]{64}$")
         for item in fixed:
