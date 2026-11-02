@@ -1,0 +1,59 @@
+{
+  "file_size": 519942,
+  "metadata_ranges": [
+    [
+      136,
+      4
+    ],
+    [
+      216,
+      4
+    ],
+    [
+      368672,
+      16
+    ],
+    [
+      437042,
+      54
+    ],
+    [
+      488928,
+      20
+    ],
+    [
+      507924,
+      4
+    ]
+  ],
+  "profiles": [
+    {
+      "wine_build": "11.18-1",
+      "source_sha256":
+        "18117302c2dbc043e0b35aea4f6e40120dd95ffe2eb5720a80f0d7f522eb0cc3",
+      "normalized_sha256":
+        "4060f8d64fdcab2b6a28cacde2632d904d15f9776594ae0c15796a5aec2c7c98"
+    },
+    {
+      "wine_build": "11.19-1",
+      "source_sha256":
+        "3b903f943ca5f65215d78fedaf30260b8e7ce8bb7626325a4c21db0f57a40295",
+      "normalized_sha256":
+        "1460eafeff050df82db74d6e5dd193a241b487454621ffd9a5a1492acc373e24"
+    },
+    {
+      "wine_build": "11.20-1",
+      "source_sha256":
+        "183c94c2f8f004acdd60455ea9199417ace0cb4ca3b1b4f4c46213487d778eec",
+      "normalized_sha256":
+        "e657039330c470485f189706b48480f68420c43257c91f25fe3bcdb089978dcf"
+    },
+    {
+      "wine_build": "11.21-1",
+      "source_sha256":
+        "a198bcd57e082254e65b05f3b359aac6b924eabdc0e4bf21ac219c60d27142bc",
+      "normalized_sha256":
+        "e657039330c470485f189706b48480f68420c43257c91f25fe3bcdb089978dcf"
+    }
+  ]
+}
