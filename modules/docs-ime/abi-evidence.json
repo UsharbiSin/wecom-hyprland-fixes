@@ -1,0 +1,28 @@
+{
+  "abi": "docs-ime-i686-v2",
+  "versions": [
+    "11.19",
+    "11.20"
+  ],
+  "upstream": "https://github.com/wine-mirror/wine",
+  "description":
+    "Source evidence assists review; it does not authorize unknown binaries.",
+  "source_sha256": {
+    "include/immdev.h":
+      "289e0bc9f39045c075887236eeb6ba6691aa31f1d57c4756820be143ec3ea32d",
+    "include/ntuser.h":
+      "0a3dad9e21bdf4d201234278f6a23bca9d41f4bb63e610943446ff6b265ee219",
+    "dlls/win32u/message.c":
+      "44cabf4c2b71db77f164268c600d624b48a902b88d66ca0007e6123dd6998e5f",
+    "dlls/wow64win/user.c":
+      "6a01e21d00478e5cf00ec2802efc10a9c7a61ed44f11bcb5d1386b937c1e9b76",
+    "dlls/win32u/imm.c":
+      "66776b76a0d66987b09f911b4c6b52372182a6feb990a1e85b0002297414aa99",
+    "dlls/winex11.drv/xim.c":
+      "caa96e514832938423f9fdf8f1ef269b33ba23ce5bb6608f3222b166674674a4",
+    "dlls/imm32/ime.c":
+      "bcebe2ce9e5cc8b99727beadcc0dd5bf72403206691b66a6c9be13cc89f1e8ec",
+    "dlls/imm32/imm.c":
+      "c0511233694b0ec314b9124345a3fc4b230619c133f0d3f9bc6fe55a03be272a"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "abi": "docs-ime-i686-v2",
+  "versions": [
+    "11.21"
+  ],
+  "upstream": "https://github.com/wine-mirror/wine",
+  "description":
+    "Source review only; unknown binaries still require exact profiles.",
+  "source_sha256": {
+    "include/immdev.h":
+      "289e0bc9f39045c075887236eeb6ba6691aa31f1d57c4756820be143ec3ea32d",
+    "include/ntuser.h":
+      "b4fe1daef86f46dd8acde9d0793f632e3253e465b36ecdd3efb8750b7175dc5d",
+    "dlls/win32u/message.c":
+      "715758b67f585e2dfdd7772f5e108db2501eac8c9acb54e94c4ba13554ce6b0e",
+    "dlls/wow64win/user.c":
+      "6a01e21d00478e5cf00ec2802efc10a9c7a61ed44f11bcb5d1386b937c1e9b76",
+    "dlls/win32u/imm.c":
+      "66776b76a0d66987b09f911b4c6b52372182a6feb990a1e85b0002297414aa99",
+    "dlls/winex11.drv/xim.c":
+      "caa96e514832938423f9fdf8f1ef269b33ba23ce5bb6608f3222b166674674a4",
+    "dlls/imm32/ime.c":
+      "bcebe2ce9e5cc8b99727beadcc0dd5bf72403206691b66a6c9be13cc89f1e8ec",
+    "dlls/imm32/imm.c":
+      "c0511233694b0ec314b9124345a3fc4b230619c133f0d3f9bc6fe55a03be272a",
+    "dlls/win32u/sysparams.c":
+      "f4e7288a790f598e6cda0c9c8e1739c2c20d9cbbc1d7824d6b828da16b6e3ebf",
+    "dlls/win32u/input.c":
+      "1626812afdbed16db5f30cc32023a5253eee24344d389de81db753262ffaab07"
+  },
+  "reviewed_changes": {
+    "include/ntuser.h":
+      "Added swapchain messages; IME enums and layouts unchanged.",
+    "dlls/win32u/message.c":
+      "Added swapchain handlers; NtUserImeDriverCall dispatch unchanged.",
+    "dlls/win32u/sysparams.c":
+      "Display-device cleanup and logging; IME rectangle dispatch unchanged."
+  }
+}
