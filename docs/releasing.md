@@ -1,7 +1,7 @@
 # 版本与发版
 
 版本号使用 `vMAJOR.MINOR.PATCH`，当前自动流程只发布正式版本。
-`0.x` 阶段仍保留每个模块的精确版本和哈希门禁。
+`0.x` 阶段仍保留每个模块的版本与组件校验门禁。
 缺陷修复增加 PATCH，新增模块或新增兼容能力增加 MINOR；
 不兼容的安装或配置变更须明确记录，稳定版之后增加 MAJOR。
 
@@ -12,10 +12,13 @@
   图片剪贴板使用 Wine 11.18 组件。
 - `v0.2.0`：图片剪贴板与文档输入桥增加 Wine 11.19 支持，
   并增加 CopyQ 历史缩略图。
+- `v0.3.0`：图片剪贴板与文档输入桥增加 Wine 11.20/11.21 支持，
+  增加有限元数据兼容、旧入口首次升级处理和 Fcitx 重启后的 XIM 重连修复。
 
 Wine 版本按模块分别判断，例如摄像头补丁限定 11.17，
-`docs-ime` 限定 11.18/11.19 已核验构建；版本号不代表整套修复的兼容范围。
-准确范围见各版本源码内的功能文档及 `modules/<模块>/module.json`。
+图片剪贴板和 `docs-ime` 支持已核验的 11.18–11.21 构建。
+XIM 重连修复限定 Arch libX11 1.8.13-2；版本号不代表整套修复的兼容范围。
+准确范围见各版本源码内的功能文档及 `modules/<模块>/` 下的兼容配置。
 
 ## 准备标签
 
@@ -23,15 +26,15 @@ Wine 版本按模块分别判断，例如摄像头补丁限定 11.17，
 2. 在 `CHANGELOG.md` 添加 `## v版本号 (YYYY-MM-DD)` 章节，
    写明变化、验证范围、升级限制，并在发版前随 PR 合并。
 3. 确认目标提交的质量检查成功，再对 `origin/main` 创建签名注释标签。
-   示例中的 `v0.2.0` 必须替换为尚未使用的目标版本。
+   示例中的 `v0.3.0` 必须替换为尚未使用的目标版本。
 
 ```sh
 git fetch origin main --tags
 git switch --detach origin/main
 python3 tools/check.py
-python3 tools/release-notes.py --tag=v0.2.0 --output=/tmp/release-notes.md
-git tag -s v0.2.0 origin/main -m 'v0.2.0'
-git push origin v0.2.0
+python3 tools/release-notes.py --tag=v0.3.0 --output=/tmp/release-notes.md
+git tag -s v0.3.0 origin/main -m 'v0.3.0'
+git push origin v0.3.0
 ```
 
 发布后不移动、不删除、不复用标签；需要修正代码时发布下一个版本。
