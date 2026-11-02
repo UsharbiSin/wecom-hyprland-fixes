@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""为精确匹配的本机 Wine 构建 RichEdit 回调副本，不安装 DLL。"""
+"""为已核对执行内容的本机 Wine 构建 RichEdit 回调副本，不安装 DLL。"""
 
 import argparse
 import hashlib
@@ -13,6 +13,8 @@ ROOT = Path(__file__).resolve().parent
 SOURCE = Path("/usr/lib/wine/i386-windows/riched20.dll")
 PROFILES = json.loads((ROOT / "profiles.json").read_text())
 BASE, HOOK, STUB = 0x7AC00000, 0x32CB5, 0x3E400
+COMPATIBILITY = json.loads((ROOT / "compatibility.json").read_text())
+STUB_SHA256 = "b786b29dfc876cc2b236aa91a435d88e9390ca19f6e33ad2f9b60b5f1fa9cdf2"
 
 
 def require(condition, message):
@@ -20,11 +22,31 @@ def require(condition, message):
         raise ValueError(message)
 
 
+def normalized_digest(original):
+    """只忽略已审校布局中的非执行元数据，其余每一个字节均须相同。"""
+    require(len(original) == COMPATIBILITY["file_size"],
+            "原始 DLL 哈希不匹配，文件尺寸不在兼容范围")
+    normalized = bytearray(original)
+    # 范围来自已知原件的 PE 审校结果，不从待测文件采信范围。
+    # 仅版本标识文本、构建说明、GUID/CRC 和时间戳；资源结构仍参与指纹。
+    for offset, size in COMPATIBILITY["metadata_ranges"]:
+        normalized[offset:offset + size] = bytes(size)
+    return hashlib.sha256(normalized).hexdigest()
+
+
 def validate_source(original):
     sha = hashlib.sha256(original).hexdigest()
     profile = next((p for p in PROFILES if p["source_sha256"] == sha), None)
-    require(profile is not None,
-            "原始 DLL 哈希不匹配；拒绝给未知 Wine 构建应用补丁")
+    if profile is None:
+        signature = normalized_digest(original)
+        baseline = next((p for p in COMPATIBILITY["profiles"]
+                         if p["normalized_sha256"] == signature), None)
+        require(baseline is not None,
+                "原始 DLL 哈希不匹配，执行内容或 PE 布局发生变化；请重新审校")
+        profile = {"wine_build": "metadata-compatible",
+                   "source_sha256": sha,
+                   "compatibility_baseline": baseline["wine_build"],
+                   "normalized_sha256": signature}
     checks = (
         (HOOK, "b80d000000"),
         (0x32CA6, "ff15dc94c67a83ec0489c285c0757b"),
@@ -44,15 +66,19 @@ def validate_source(original):
 
 def apply_stub(original, stub):
     profile = validate_source(original)
-    require(len(stub) == 111, "回调机器码大小不匹配")
+    require(len(stub) == 111 and
+            hashlib.sha256(stub).hexdigest() == STUB_SHA256,
+            "回调机器码大小或哈希不匹配")
     require(set(original[STUB:STUB + len(stub)]) == {0},
             "预留空间不是全零，拒绝覆盖")
     patched = bytearray(original)
     patched[HOOK:HOOK + 5] = b"\xe9" + struct.pack("<i", STUB - (HOOK + 5))
     patched[STUB:STUB + len(stub)] = stub
     struct.pack_into("<I", patched, 0x180, STUB + len(stub) - 0x1000)
-    require(hashlib.sha256(patched).hexdigest() == profile["candidate_sha256"],
-            "补丁结果哈希不匹配，拒绝输出")
+    if "candidate_sha256" in profile:
+        require(hashlib.sha256(patched).hexdigest() ==
+                profile["candidate_sha256"],
+                "补丁结果哈希不匹配，拒绝输出")
     return patched
 
 
@@ -82,6 +108,7 @@ def build(source, output):
     manifest = {
         "状态": "已构建",
         **profile,
+        "candidate_sha256": hashlib.sha256(patched).hexdigest(),
         "architecture": "i386 PE",
         "hook_rva": hex(HOOK),
         "stub_rva": hex(STUB),

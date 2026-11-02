@@ -3,6 +3,7 @@
 
 import argparse
 import hashlib
+import importlib.util
 import json
 from pathlib import Path
 import struct
@@ -12,6 +13,10 @@ import tempfile
 ROOT = Path(__file__).resolve().parent
 PROFILES = json.loads((ROOT / "profiles.json").read_text())
 FIXED = {profile["candidate_sha256"] for profile in PROFILES}
+SPEC = importlib.util.spec_from_file_location(
+    "riched20_build", ROOT / "build.py")
+BUILDER = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(BUILDER)
 
 
 def require(condition, message):
@@ -21,7 +26,17 @@ def require(condition, message):
 
 def map_pe(data, new_base):
     # 在执行任何 DLL 字节之前，校验整个文件。
-    require(hashlib.sha256(data).hexdigest() in FIXED, "待测 DLL 哈希不匹配")
+    if hashlib.sha256(data).hexdigest() not in FIXED:
+        require(len(data) == BUILDER.COMPATIBILITY["file_size"],
+                "待测 DLL 哈希不匹配")
+        original = bytearray(data)
+        original[BUILDER.HOOK:BUILDER.HOOK + 5] = bytes.fromhex("b80d000000")
+        original[BUILDER.STUB:BUILDER.STUB + 111] = bytes(111)
+        struct.pack_into("<I", original, 0x180, 0x3D358)
+        # 不能凭构建目录中的自报清单放行未知机器码。
+        expected = BUILDER.apply_stub(
+            original, data[BUILDER.STUB:BUILDER.STUB + 111])
+        require(expected == data, "待测 DLL 与经过验证的确定性补丁不一致")
     pe = struct.unpack_from("<I", data, 0x3C)[0]
     opt = pe + 24
     base = struct.unpack_from("<I", data, opt + 28)[0]
