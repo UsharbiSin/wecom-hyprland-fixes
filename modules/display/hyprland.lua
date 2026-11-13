@@ -33,6 +33,19 @@ hl.window_rule({
   tag = "+wecom-fixes-menu",
 })
 
+-- 搜索结果窗由主窗处理键盘输入；显示或悬停时不能抢走焦点。
+-- 保留鼠标输入，搜索结果仍可点击；空标题阴影继续使用装饰层规则。
+hl.window_rule({
+  name = "wecom-fixes-search",
+  match = {
+    class = "(?i)^wxwork\\.exe$",
+    title = "^SearchResultWindow2$",
+  },
+  no_focus = false,
+  no_initial_focus = true,
+  no_follow_mouse = true,
+})
+
 -- 通过动态标签限定到企业微信菜单；不匹配其他应用的同名菜单。
 hl.bind("mouse:272", hl.dsp.pass({ window = "tag:wecom-fixes-menu" }), {
   auto_consuming = true,
