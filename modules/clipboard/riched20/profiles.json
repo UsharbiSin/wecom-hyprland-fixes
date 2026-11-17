@@ -26,5 +26,12 @@
       "a198bcd57e082254e65b05f3b359aac6b924eabdc0e4bf21ac219c60d27142bc",
     "candidate_sha256":
       "699d4b09418db06544af8bb26cd828747d3ae084a0631828672aa38e4fe1d047"
+  },
+  {
+    "wine_build": "11.22-1",
+    "source_sha256":
+      "8875827402da7abab8a22ae763836bf5bbcac3994ef3f3df2e99853e44a5bdb1",
+    "candidate_sha256":
+      "79b4d7304b36e4843155cbb8eea3eae475accc3ec1cba594f8eb012cd9e84244"
   }
 ]

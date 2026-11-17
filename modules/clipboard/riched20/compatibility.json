@@ -54,6 +54,13 @@
         "a198bcd57e082254e65b05f3b359aac6b924eabdc0e4bf21ac219c60d27142bc",
       "normalized_sha256":
         "e657039330c470485f189706b48480f68420c43257c91f25fe3bcdb089978dcf"
+    },
+    {
+      "wine_build": "11.22-1",
+      "source_sha256":
+        "8875827402da7abab8a22ae763836bf5bbcac3994ef3f3df2e99853e44a5bdb1",
+      "normalized_sha256":
+        "e5c98a90478efdfd8fdd62c997c90f5169782aede22454be335e76f31a78e5fe"
     }
   ]
 }

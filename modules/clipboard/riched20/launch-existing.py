@@ -135,7 +135,10 @@ def synchronize_prefix(source, prefix):
             from error
     print("正在更新企业微信专用 Wine 前缀…", file=sys.stderr)
     try:
-        process = subprocess.Popen([WINE, "wineboot", "--update"],
+        # --init suppresses ordinary Run/Startup items during maintenance.
+        # Otherwise WeCom starts before the private component views exist
+        # and prevents the following server wait from completing.
+        process = subprocess.Popen([WINE, "wineboot", "--init", "--update"],
                                    env=env, stdout=sys.stderr)
         result = process.wait(timeout=120)
         if result:

@@ -83,7 +83,7 @@ class ClipboardStartup(unittest.TestCase):
         self.assertEqual(events, ["server-wait", "boot-complete",
                                   "server-wait", "build"])
         self.assertEqual(boot.call_args.args[0],
-                         [LAUNCHER.WINE, "wineboot", "--update"])
+                         [LAUNCHER.WINE, "wineboot", "--init", "--update"])
         self.assertEqual(boot.call_args.kwargs["env"]["WINEDLLOVERRIDES"],
                          "explorer.exe=b;wineboot.exe=b;winewayland.drv=d")
         command = execute.call_args.args[1]

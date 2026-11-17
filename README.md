@@ -17,10 +17,10 @@
 | 项目 | 验证范围 |
 | --- | --- |
 | 系统 | Arch Linux |
-| 桌面 | Hyprland 0.56.2、XWayland |
+| 桌面 | Hyprland 0.56.2；GTK 文件选择器另验 0.57，均为 XWayland |
 | 企业微信 | Windows 版 5.0.11.6018 |
 | 内置会议 | 3.26.511.637 |
-| Wine | clipboard / docs-ime 11.18–11.21；camera 11.17 |
+| Wine | clipboard 11.18–11.22；docs-ime 11.18–11.22；camera 11.17 |
 | 前缀 | 已安装企业微信的独立 Wine 前缀 |
 
 脚本不包含企业微信安装器，需要已有可运行的企业微信安装。
@@ -41,9 +41,12 @@
 | `screencast` | 内置会议读取不到完整 Wayland 桌面 | [屏幕共享][screencast] |
 | `clipboard` | 双向图片粘贴、避免干扰 WPS 富格式 | [图片剪贴板][clipboard] |
 | `copyq` | 企业微信新图片历史缺少缩略图 | [CopyQ 历史预览][copyq] |
+| `native-file-picker` | 聊天与审批附件改用 GTK 文件选择窗口 | [GTK 文件选择][picker] |
 
 没有默认安装全部功能的命令。请按问题选择模块，
 特别是 `camera` 仅适用于已核验的 Wine 11.17 组件。
+`native-file-picker` 使用已有受管启动器的独立安装流程，
+仅支持已验证的 Wine 11.22 运行环境，尚未接入 `wecom-fix install`。
 
 ## 开始使用
 
@@ -113,6 +116,9 @@ flowchart LR
 保留上述旧配置；源码与完整组件检查及现场验收范围见
 [Wine 11.21 记录](docs/features/docs-ime-wine21.md)。
 
+Arch Wine `11.22-1` 已补充源码、包、构建与离线核验，
+实际界面验收待部署后完成；见 [Wine 11.22 记录](docs/features/docs-ime-wine22.md)。
+
 Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 屏幕共享不能自动排除会议自己的窗口，多显示器和不同缩放需单独测试。
 使用旧全局图片转换服务的用户，请先阅读[剪贴板迁移说明][legacy]。
@@ -131,3 +137,4 @@ Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 [rollback]: docs/usage/rollback.md
 
 [xim-reconnect]: modules/xim-reconnect/README.md
+[picker]: modules/native-file-picker/README.md

@@ -1,0 +1,54 @@
+{
+  "profile": "wine-11.22-1",
+  "checked_on": "2026-11-17",
+  "package": "Arch wine 11.22-1",
+  "source_evidence": "abi-evidence-wine22.json",
+  "components": [
+    {
+      "target": "/usr/lib/wine/i386-windows/imm32.dll",
+      "sha256":
+        "7ffc21caae0be6882adb5644b2de7ab36cc9cd0b801df6bf2d49de88336f52ef",
+      "matches_installed_package": true
+    },
+    {
+      "target": "/usr/lib/wine/i386-windows/win32u.dll",
+      "sha256":
+        "47e4845322953e19663c2df028ab5444eca11e757f48bf9987fadaf9e09daf13",
+      "matches_installed_package": true
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-windows/wow64win.dll",
+      "sha256":
+        "5fd8bc3cdbb59be61f95efeaf0a4526de953547eb59660ddae0abcea42d95e43",
+      "matches_installed_package": true
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-unix/win32u.so",
+      "sha256":
+        "0fac01e0529cc6ea712764f5f7249068c3c8a2a980de8f651b3e620ea0719ebd",
+      "matches_installed_package": true
+    },
+    {
+      "target": "/usr/lib/wine/x86_64-unix/winex11.so",
+      "sha256":
+        "619001e1cbe4412ad19bfdbb7ddee48f6cc2296f1c9d5cb57bcd6125f9457c84",
+      "matches_installed_package": true
+    }
+  ],
+  "pe_sections_compared": [
+    ".text",
+    ".rdata",
+    ".data",
+    ".edata"
+  ],
+  "binary_review": {
+    "imm32.dll":
+      "All compared sections identical to Arch wine 11.21-1.",
+    "win32u.dll":
+      "All compared sections identical to Arch wine 11.21-1.",
+    "wow64win.dll":
+      "Text differs; data and exports unchanged. Source delta reviewed."
+  },
+  "validation_scope":
+    "Source, package, build and offline checks; live IME check pending."
+}

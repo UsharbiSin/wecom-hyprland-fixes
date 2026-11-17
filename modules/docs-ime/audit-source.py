@@ -10,6 +10,7 @@ EVIDENCE_FILES = {
     "11.19": "abi-evidence.json",
     "11.20": "abi-evidence.json",
     "11.21": "abi-evidence-wine21.json",
+    "11.22": "abi-evidence-wine22.json",
 }
 
 

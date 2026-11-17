@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later
- * Wine 11.18/11.19/11.20/11.21 XIM updates are process local, even when
+ * Wine 11.18 through 11.22 XIM updates are process local, even when
  * the focused CEF child belongs to another process. Transfer only verified
  * document IME updates using public IMM APIs in the destination. Return the
  * document's caret geometry to the source process, which owns the root XIC.
