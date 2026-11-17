@@ -55,14 +55,28 @@ class SourceAuditTests(unittest.TestCase):
                             new["source_sha256"]["include/ntuser.h"])
         self.assertEqual(old["source_sha256"]["dlls/win32u/imm.c"],
                          new["source_sha256"]["dlls/win32u/imm.c"])
-        for version in ("11.19", "11.20", "11.21"):
+        for version in ("11.19", "11.20", "11.21", "11.22"):
             evidence = self.audit.source_evidence(version)
             self.assertIn(version, evidence["versions"])
             for digest in evidence["source_sha256"].values():
                 self.assertRegex(digest, r"^[a-f0-9]{64}$")
 
+    def test_wine22_keeps_ime_abi_and_records_unrelated_changes(self):
+        previous = self.audit.source_evidence("11.21")
+        current = self.audit.source_evidence("11.22")
+        self.assertEqual(current["versions"], ["11.22"])
+        self.assertEqual(set(previous["source_sha256"]),
+                         set(current["source_sha256"]))
+        changed = {name for name, digest in current["source_sha256"].items()
+                   if previous["source_sha256"][name] != digest}
+        self.assertEqual(changed, {
+            "dlls/wow64win/user.c", "dlls/win32u/sysparams.c",
+            "dlls/win32u/input.c",
+        })
+        self.assertEqual(set(current["reviewed_changes"]), changed)
+
     def test_unknown_source_version_never_falls_back_to_old_evidence(self):
-        for version in ("11.18", "11.22", "11.21-staging", "../11.21"):
+        for version in ("11.18", "11.23", "11.22-staging", "../11.22"):
             with self.subTest(version=version):
                 with self.assertRaisesRegex(ValueError, "没有"):
                     self.audit.audit(self.source, version=version)

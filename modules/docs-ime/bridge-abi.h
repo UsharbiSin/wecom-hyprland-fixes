@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: LGPL-2.1-or-later
- * Wine 11.18/11.19/11.20/11.21 private declarations:
+ * Wine 11.18 through 11.22 private declarations:
  * include/immdev.h and include/ntuser.h.
  * Copyright 2007 CodeWeavers, Aric Stewart
  * Copyright 2021 Jacek Caban for CodeWeavers

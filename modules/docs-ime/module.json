@@ -1,7 +1,7 @@
 {
   "id": "docs-ime",
   "title": "共享文档中文输入",
-  "description": "限定 Wine 11.18/11.19/11.20/11.21 已核验构建的跨进程 XIM 提交桥",
+  "description": "限定 Wine 11.18/11.19/11.20/11.21/11.22 已核验构建的跨进程 XIM 提交桥",
   "dependencies": [
     "python3",
     "i686-w64-mingw32-gcc",
@@ -36,7 +36,9 @@
         "wine-11.20-1":
           "4cd32aef9d26e05b20fefba0fb59d54c3740b826740c660eaad70be242c73442",
         "wine-11.21-1":
-          "5a2dfb1231ddf8ec232277cb3b49be8110b8cdbbdc4fcdd687e6570aa0e72e2d"
+          "5a2dfb1231ddf8ec232277cb3b49be8110b8cdbbdc4fcdd687e6570aa0e72e2d",
+        "wine-11.22-1":
+          "7ffc21caae0be6882adb5644b2de7ab36cc9cd0b801df6bf2d49de88336f52ef"
       }
     },
     {
@@ -49,7 +51,9 @@
         "wine-11.20-1":
           "ca3e231453b364528ea9b5bce97e3ef8b37899ee304e019f849d6da0df6de0c7",
         "wine-11.21-1":
-          "640c498aa5cdebd7859bbac694616c31704170faff9af86710cc87ec9372feb8"
+          "640c498aa5cdebd7859bbac694616c31704170faff9af86710cc87ec9372feb8",
+        "wine-11.22-1":
+          "47e4845322953e19663c2df028ab5444eca11e757f48bf9987fadaf9e09daf13"
       }
     },
     {
@@ -62,7 +66,9 @@
         "wine-11.20-1":
           "560d959ce5e218f1ecf6753d7f7228617b11fd1443ad4abaed3d86f1fda03dd9",
         "wine-11.21-1":
-          "be8babb3d9561bf95342a8b667ae1bbe4061bc45d2a15486bba574e38807e84e"
+          "be8babb3d9561bf95342a8b667ae1bbe4061bc45d2a15486bba574e38807e84e",
+        "wine-11.22-1":
+          "5fd8bc3cdbb59be61f95efeaf0a4526de953547eb59660ddae0abcea42d95e43"
       }
     },
     {
@@ -75,7 +81,9 @@
         "wine-11.20-1":
           "ba376f9895f2ab99d7d01b61ab4cae05ddabc30d8c354d150584c7c81f4d7c12",
         "wine-11.21-1":
-          "d6764b451d0ad2da6f148ef5841e717d202b767e4bdf27f31336bbf317e9e89e"
+          "d6764b451d0ad2da6f148ef5841e717d202b767e4bdf27f31336bbf317e9e89e",
+        "wine-11.22-1":
+          "0fac01e0529cc6ea712764f5f7249068c3c8a2a980de8f651b3e620ea0719ebd"
       }
     },
     {
@@ -88,7 +96,9 @@
         "wine-11.20-1":
           "4ef402a67c64004db1bbf2d6f3e60eabdf3a5e3de10e2dc721d4da4e5a06605f",
         "wine-11.21-1":
-          "a61995a7798cc6aaf2b92356bdaddedec1d376d3a2c9a2e8826ad1278894b117"
+          "a61995a7798cc6aaf2b92356bdaddedec1d376d3a2c9a2e8826ad1278894b117",
+        "wine-11.22-1":
+          "619001e1cbe4412ad19bfdbb7ddee48f6cc2296f1c9d5cb57bcd6125f9457c84"
       }
     },
     {
@@ -101,7 +111,9 @@
         "wine-11.20-1":
           "4cd32aef9d26e05b20fefba0fb59d54c3740b826740c660eaad70be242c73442",
         "wine-11.21-1":
-          "5a2dfb1231ddf8ec232277cb3b49be8110b8cdbbdc4fcdd687e6570aa0e72e2d"
+          "5a2dfb1231ddf8ec232277cb3b49be8110b8cdbbdc4fcdd687e6570aa0e72e2d",
+        "wine-11.22-1":
+          "7ffc21caae0be6882adb5644b2de7ab36cc9cd0b801df6bf2d49de88336f52ef"
       }
     },
     {
@@ -114,7 +126,9 @@
         "wine-11.20-1":
           "ca3e231453b364528ea9b5bce97e3ef8b37899ee304e019f849d6da0df6de0c7",
         "wine-11.21-1":
-          "640c498aa5cdebd7859bbac694616c31704170faff9af86710cc87ec9372feb8"
+          "640c498aa5cdebd7859bbac694616c31704170faff9af86710cc87ec9372feb8",
+        "wine-11.22-1":
+          "47e4845322953e19663c2df028ab5444eca11e757f48bf9987fadaf9e09daf13"
       }
     },
     {

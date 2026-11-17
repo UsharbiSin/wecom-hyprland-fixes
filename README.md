@@ -20,7 +20,7 @@
 | 桌面 | Hyprland 0.56.2、XWayland |
 | 企业微信 | Windows 版 5.0.11.6018 |
 | 内置会议 | 3.26.511.637 |
-| Wine | clipboard / docs-ime 11.18–11.21；camera 11.17 |
+| Wine | clipboard 11.18–11.21；docs-ime 11.18–11.22；camera 11.17 |
 | 前缀 | 已安装企业微信的独立 Wine 前缀 |
 
 脚本不包含企业微信安装器，需要已有可运行的企业微信安装。
@@ -112,6 +112,9 @@ flowchart LR
 共享文档输入桥另已核验 Arch Wine `11.20-1` 和 `11.21-1`，
 保留上述旧配置；源码与完整组件检查及现场验收范围见
 [Wine 11.21 记录](docs/features/docs-ime-wine21.md)。
+
+Arch Wine `11.22-1` 已补充源码、包、构建与离线核验，
+实际界面验收待部署后完成；见 [Wine 11.22 记录](docs/features/docs-ime-wine22.md)。
 
 Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 屏幕共享不能自动排除会议自己的窗口，多显示器和不同缩放需单独测试。

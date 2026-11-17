@@ -12,7 +12,7 @@ from unittest import mock
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / "modules/docs-ime"
 PROFILES = ("wine-11.18-1", "wine-11.19-1",
-            "wine-11.20-1", "wine-11.21-1")
+            "wine-11.20-1", "wine-11.21-1", "wine-11.22-1")
 sys.path.insert(0, str(ROOT / "tools"))
 import manager
 
@@ -151,9 +151,12 @@ class DocumentImeProfileTests(unittest.TestCase):
         self.assertEqual(execute.call_args.args[1][-1], "--stop")
 
     def test_legacy_profile_values_remain_unchanged(self):
-        # Snapshot of the reviewed 11.20 prerequisite (6e47d13), not current
-        # manifest values: keeping an old key with new hashes is not support.
+        # Snapshots of reviewed profiles through 11.21 (da482e8), not
+        # current values: keeping an old key with new hashes is not support.
         expected = {
+            "wine-11.21-1":
+                ("2249e295201815dc896ad9e1c04835c4"
+                 "2593926219169bbde32d522f7325273f"),
             "wine-11.18-1":
                 ("083aca75078836aa3b042fa4c11709be"
                  "2e330d7ba942339a9c443ffbcf26113e"),
