@@ -17,10 +17,10 @@
 | 项目 | 验证范围 |
 | --- | --- |
 | 系统 | Arch Linux |
-| 桌面 | Hyprland 0.56.2、XWayland |
+| 桌面 | Hyprland 0.56.2；GTK 文件选择器另验 0.57，均为 XWayland |
 | 企业微信 | Windows 版 5.0.11.6018 |
 | 内置会议 | 3.26.511.637 |
-| Wine | clipboard 11.18–11.21；docs-ime 11.18–11.22；camera 11.17 |
+| Wine | clipboard 11.18–11.22；docs-ime 11.18–11.22；camera 11.17 |
 | 前缀 | 已安装企业微信的独立 Wine 前缀 |
 
 脚本不包含企业微信安装器，需要已有可运行的企业微信安装。

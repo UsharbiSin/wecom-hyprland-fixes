@@ -56,6 +56,11 @@ python3 modules/native-file-picker/install-existing.py \
 
 ## 验证
 
+2026-11-17 在企业微信 5.0.11.6018、Wine 11.22、Hyprland 0.57
+中实测聊天发送文件和审批添加附件的 GTK 打开、取消及返回界面。
+另在实际运行时视图中验证启动校验与 GTK 初始化，包括继承现有输入法环境。
+未退出生产应用重测完整冷启动，也未发送或上传实际附件。
+
 ```sh
 python3 tools/check.py
 python3 -m unittest tests.test_native_file_picker -v
