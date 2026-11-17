@@ -41,9 +41,12 @@
 | `screencast` | 内置会议读取不到完整 Wayland 桌面 | [屏幕共享][screencast] |
 | `clipboard` | 双向图片粘贴、避免干扰 WPS 富格式 | [图片剪贴板][clipboard] |
 | `copyq` | 企业微信新图片历史缺少缩略图 | [CopyQ 历史预览][copyq] |
+| `native-file-picker` | 聊天与审批附件改用 GTK 文件选择窗口 | [GTK 文件选择][picker] |
 
 没有默认安装全部功能的命令。请按问题选择模块，
 特别是 `camera` 仅适用于已核验的 Wine 11.17 组件。
+`native-file-picker` 使用已有受管启动器的独立安装流程，
+仅支持已验证的 Wine 11.22 运行环境，尚未接入 `wecom-fix install`。
 
 ## 开始使用
 
@@ -134,3 +137,4 @@ Wine 11.18 不匹配旧摄像头补丁，脚本会拒绝混用内部 ABI。
 [rollback]: docs/usage/rollback.md
 
 [xim-reconnect]: modules/xim-reconnect/README.md
+[picker]: modules/native-file-picker/README.md
