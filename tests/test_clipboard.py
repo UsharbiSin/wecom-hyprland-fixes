@@ -46,6 +46,11 @@ GOLDEN_OLD_PROFILES = {
         "0dc20f8b28ca5e1e3e4d323b2ac18f395042f97494e2839a733deb54ebbbd677",
         "e657039330c470485f189706b48480f68420c43257c91f25fe3bcdb089978dcf",
     ),
+    "11.21-1": (
+        "a198bcd57e082254e65b05f3b359aac6b924eabdc0e4bf21ac219c60d27142bc",
+        "699d4b09418db06544af8bb26cd828747d3ae084a0631828672aa38e4fe1d047",
+        "e657039330c470485f189706b48480f68420c43257c91f25fe3bcdb089978dcf",
+    ),
 }
 
 
@@ -74,7 +79,7 @@ class ClipboardGuards(unittest.TestCase):
         module = json.loads((MODULE / "module.json").read_text())
         pairs = {p["source_sha256"]: p["candidate_sha256"]
                  for p in BUILD.PROFILES}
-        self.assertEqual(len(pairs), 4)
+        self.assertEqual(len(pairs), 5)
         self.assertEqual(set(pairs.values()), VERIFY.FIXED)
         self.assertTrue(set(pairs).isdisjoint(pairs.values()))
         for binding in module["bindings"]:
